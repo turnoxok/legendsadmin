@@ -194,6 +194,7 @@ function renderTable(players){
   const table = document.getElementById("players");
   table.innerHTML="";
   let total=0,pagos=0,saldos=0;
+
   players.forEach(p=>{
     const totalNum = Number(p.Total)||0;
     const pagoNum = Number(p.Pago)||0;
@@ -213,6 +214,11 @@ function renderTable(players){
 
   document.getElementById("totales").innerText=`Total: ${total} | Pagos: ${pagos} | Saldo: ${saldos}`;
   document.getElementById("felicitaciones").innerText = (saldos===0) ? "🎉 ¡Todos los jugadores de tu club ya están pagados!" : "";
+
+  // ✅ DESHABILITAR BOTONES SI MODO "vista"
+  if(modo === "vista"){
+    table.querySelectorAll("button").forEach(btn => btn.disabled = true);
+  }
 }
 
 // Polling cada 10s para actualizar tabla
