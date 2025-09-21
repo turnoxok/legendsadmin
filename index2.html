@@ -102,6 +102,7 @@ function hideLoader(){ loader.classList.add("hidden"); }
 window.addEventListener("load",()=>{ showLoader(); setTimeout(()=>hideLoader(),1200); });
 
 let clubActual = null; // variable global
+  let modo = null; // nuevo
 
 async function login(){
   showLoader();
@@ -118,14 +119,26 @@ async function login(){
     if(data.ok){
       rol = data.rol;          // si querés usar roles más adelante
       clubActual = data.club;  // <-- guardar club real
+      modo = data.modo;         // <-- guardamos el modo recibido del backend
       document.getElementById("rolText").innerText = usuario;
       document.getElementById("login").style.display="none";
       document.getElementById("app").style.display="block";
       loadPlayers();           // <-- ahora sí, con clubActual definido
+
+      // DESHABILITAR botones de pago si es modo 'vista'
+  if(modo === "vista"){
+    document.querySelectorAll("td button").forEach(btn => btn.disabled = true);
+  }
+
+
+      
     } else { alert("Usuario o clave incorrectos"); }
   } catch(err){ hideLoader(); alert("Error de conexión"); console.error(err);}
 }
+  
+ 
 
+  
 async function loadPlayers(){
   showLoader();
   try{
