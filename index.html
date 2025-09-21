@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control de Pagos Rugby</title>
+  <script>
+    const API_URL = '/.netlify/functions/gs-proxy';  // proxy en Netlify
+
+    async function login() {
+      const usuario = document.getElementById("usuario").value;
+      const clave = document.getElementById("clave").value;
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: "login", usuario, clave })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          localStorage.setItem("club", data.club);
+          document.getElementById("login").style.display = "none";
+          document.getElementById("app").style.display = "block";
+          loadPlayers();
+        } else {
+          alert("Usuario o clave incorrectos");
+        }
+      } catch (err) {
+        alert("Error de red: " + err.message);
+      }
+    }
+
+    async function loadPlayers() {
+      const club = localStorage.getItem("club");
+      if (!club) {
+        alert("No estás logueado");
+        return;
+      }
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: "getPlayers", club })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        renderTable(data.players);
+      } else {
+        alert("Error al cargar jugadores: " + data.error);
+      }
+    }
+
+    async function addPayment(cuil) {
+      const pagoInput = prompt("Ingrese nuevo pago:");
+      const pago = Number(pagoInput);
+      if (!cuil) return;
+      if (isNaN(pago)) {
+        alert("Pago no es un número válido");
+        return;
+      }
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: "addPayment", cuil, pago })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        loadPlayers();
+      } else {
+        alert("Error al agregar pago: " + data.error);
+      }
+    }
+
+    function renderTable(players) {
+      const table = document.getElementById("players");
+      table.innerHTML = "";
+      let total = 0, pagos = 0, saldos = 0;
+
+      players.forEach(p => {
+        const totalNum = Number(p.Total) || 0;
+        const pagoNum = Number(p.Pago) || 0;
+        const saldoNum = Number(p.Saldo) || (totalNum - pagoNum);
+
+        total += totalNum;
+        pagos += pagoNum;
+        saldos += saldoNum;
+
+        const tr = document.createElement("tr");
+        tr.style.background = (saldoNum === 0) ? "#c8e6c9" : "";
+        tr.innerHTML = `
+          <td>${p.Nombre} ${p.Apellido}</td>
+          <td>${p["CUIL/CUIT"]}</td>
+          <td>${totalNum}</td>
+          <td>${pagoNum}</td>
+          <td>${saldoNum}</td>
+          <td><button onclick="addPayment('${p["CUIL/CUIT"]}')">Agregar Pago</button></td>
+        `;
+        table.appendChild(tr);
+      });
+
+      document.getElementById("totales").innerText =
+        `Total: ${total} | Pagos: ${pagos} | Saldo: ${saldos}`;
+
+      if (saldos === 0) {
+        // mensaje de felicitaciones
+        const f = document.getElementById("felicitaciones");
+        f.innerText = "🎉 ¡Felicitaciones, todos los jugadores de tu club ya están pagados!";
+      } else {
+        document.getElementById("felicitaciones").innerText = "";
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="login">
+    <h1>Login</h1>
+    <input id="usuario" placeholder="Usuario"><br>
+    <input id="clave" type="password" placeholder="Clave"><br>
+    <button onclick="login()">Entrar</button>
+  </div>
+
+  <div id="app" style="display:none;">
+    <h1>Control de Pagos</h1>
+    <div id="totales"></div>
+    <div id="felicitaciones" style="margin-top:10px; color: green; font-weight: bold;"></div>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Nombre</th><th>CUIL/CUIT</th><th>Total</th><th>Pago</th><th>Saldo</th><th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="players"></tbody>
+    </table>
+  </div>
+</body>
+</html>
