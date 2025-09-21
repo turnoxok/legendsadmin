@@ -15,7 +15,7 @@ exports.handler = async function(event, context) {
     const body = JSON.parse(event.body || '{}');
 
     // 👉 acá usamos la URL de tu Apps Script
-    const GS_URL = "https://script.google.com/macros/s/AKfycbysK7VAOEGc2DCkZgEgYcDiHqREBf5HM6FoH1bsnGX7VglfdlSttN4VhVn9rnuwV5h8-g/exec";
+    const GS_URL = "https://script.google.com/macros/s/AKfycbxk7b_y1CSHd4hQrNlwqGH4AMdxsOuWEcJrwb98ZQVixx0PZrPxm-Rs8j9L5ZXamK-OOQ/exec";
 
     const res = await fetch(GS_URL, {
       method: 'POST',
