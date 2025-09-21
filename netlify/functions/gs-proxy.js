@@ -13,13 +13,16 @@ exports.handler = async function(event, context) {
   }
   try {
     const body = JSON.parse(event.body || '{}');
-    const GS_URL = process.env.GS_URL; // definí esta variable de entorno en Netlify
+
+    // 👉 acá usamos la URL de tu Apps Script
+    const GS_URL = "https://script.google.com/macros/s/AKfycbysK7VAOEGc2DCkZgEgYcDiHqREBf5HM6FoH1bsnGX7VglfdlSttN4VhVn9rnuwV5h8-g/exec";
 
     const res = await fetch(GS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
+
     const text = await res.text();
     return {
       statusCode: res.status,
