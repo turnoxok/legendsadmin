@@ -36,8 +36,19 @@
 
     /* ===== App container ===== */
     #app { display:none; width:100%; max-width:700px; margin:0 auto; text-align:center; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; font-size:14px; }
-    th,td { border:1px solid #084D1F; padding:6px; text-align:center; word-break: break-word; }
+    table { 
+  width:100%; 
+  border-collapse:collapse; 
+  font-size:14px; 
+  min-width:600px; /* mínimo ancho para que el scroll se active si no entra en pantalla */
+}
+th, td { 
+  border:1px solid #084D1F; 
+  padding:6px; 
+  text-align:center; 
+  word-wrap:break-word; 
+}
+
     th { background:#084D1F; color:#F5F6F2; }
     tr.fullyPaid { background:#c8e6c9; }
 
