@@ -101,6 +101,8 @@ function hideLoader(){ loader.classList.add("hidden"); }
 
 window.addEventListener("load",()=>{ showLoader(); setTimeout(()=>hideLoader(),1200); });
 
+let clubActual = null; // variable global
+
 async function login(){
   showLoader();
   const usuario = document.getElementById("usuario").value;
@@ -114,22 +116,23 @@ async function login(){
     const data = await res.json();
     hideLoader();
     if(data.ok){
+      rol = data.rol;          // si querés usar roles más adelante
+      clubActual = data.club;  // <-- guardar club real
       document.getElementById("rolText").innerText = usuario;
       document.getElementById("login").style.display="none";
       document.getElementById("app").style.display="block";
-      loadPlayers();
+      loadPlayers();           // <-- ahora sí, con clubActual definido
     } else { alert("Usuario o clave incorrectos"); }
   } catch(err){ hideLoader(); alert("Error de conexión"); console.error(err);}
 }
 
 async function loadPlayers(){
   showLoader();
-  const club = document.getElementById("rolText").innerText;
   try{
     const res = await fetch(API_URL,{
       method:"POST",
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:"getPlayers",club})
+      body:JSON.stringify({action:"getPlayers",club:clubActual})
     });
     const data = await res.json();
     if(data.ok){
@@ -138,6 +141,7 @@ async function loadPlayers(){
   } catch(err){ alert("Error de red"); console.error(err); }
   finally{ hideLoader(); }
 }
+
 
 async function addPayment(cuil){
   const pagoInput = prompt("Ingrese nuevo pago:");
