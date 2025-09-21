@@ -116,11 +116,11 @@ async function login() {
       body: JSON.stringify({ action: "login", usuario, clave })
     });
 
+    const text = await res.text(); // leemos el body solo una vez
     let data;
     try {
-      data = await res.json();
-    } catch (err) {
-      const text = await res.text();
+      data = JSON.parse(text); // intentamos parsear a JSON
+    } catch(err) {
       console.error("Respuesta no es JSON:", text);
       alert("Error: el servidor no devolvió JSON válido");
       hideLoader();
@@ -130,17 +130,16 @@ async function login() {
     hideLoader();
 
     if (data.ok) {
-      rol = data.rol;          // opcional si usas roles más adelante
-      clubActual = data.club;  // guarda el club del usuario
-      modo = data.modo;        // guarda el modo (edicion / vista)
+      rol = data.rol;          
+      clubActual = data.club;  
+      modo = data.modo;        
 
       document.getElementById("rolText").innerText = usuario;
       document.getElementById("login").style.display = "none";
       document.getElementById("app").style.display = "block";
 
-      loadPlayers();           // carga la tabla de jugadores
+      loadPlayers();           
 
-      // DESHABILITAR botones de pago si es modo 'vista'
       if (modo === "vista") {
         document.querySelectorAll("td button").forEach(btn => btn.disabled = true);
       }
