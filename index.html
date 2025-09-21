@@ -190,6 +190,10 @@ async function addPayment(cuil){
   finally{ hideLoader(); }
 }
 
+function formatCurrency(num){
+  return "$" + Number(num).toLocaleString('es-AR'); // ej: 30000 -> $30.000
+}
+
 function renderTable(players){
   const table = document.getElementById("players");
   table.innerHTML="";
@@ -211,15 +215,18 @@ function renderTable(players){
 
     tr.innerHTML = `<td>${p.Nombre} ${p.Apellido}</td>
                     <td>${p["CUIL/CUIT"]}</td>
-                    <td>${totalNum}</td>
-                    <td>${pagoNum}</td>
-                    <td>${saldoNum}</td>
+                    <td>${formatCurrency(totalNum)}</td>
+                    <td>${formatCurrency(pagoNum)}</td>
+                    <td>${formatCurrency(saldoNum)}</td>
                     <td>${botonPago}</td>`;
     table.appendChild(tr);
   });
 
-  document.getElementById("totales").innerText=`Total: ${total} | Pagos: ${pagos} | Saldo: ${saldos}`;
-  document.getElementById("felicitaciones").innerText = (saldos===0) ? "🎉 ¡Todos los jugadores de tu club ya están pagados!" : "";
+  document.getElementById("totales").innerText=
+    `Total: ${formatCurrency(total)} | Pagos: ${formatCurrency(pagos)} | Saldo: ${formatCurrency(saldos)}`;
+
+  document.getElementById("felicitaciones").innerText = 
+    (saldos===0) ? " ¡Todos los jugadores de tu club ya están pagados!" : "";
 }
 
 
