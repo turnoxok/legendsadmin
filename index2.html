@@ -106,13 +106,17 @@ th, td {
   <div id="totales"></div>
   <div id="felicitaciones"></div>
 
-  <table>
-    <thead>
-      <tr><th>Nombre</th><th>CUIL/CUIT</th><th>Total</th><th>Pago</th><th>Saldo</th><th>Acción</th></tr>
-    </thead>
-    <tbody id="players"></tbody>
-  </table>
+  <!-- Contenedor de la tabla con scroll horizontal -->
+  <div style="width:100%; overflow-x:auto; margin-top:10px;">
+    <table>
+      <thead>
+        <tr><th>Nombre</th><th>CUIL/CUIT</th><th>Total</th><th>Pago</th><th>Saldo</th><th>Acción</th></tr>
+      </thead>
+      <tbody id="players"></tbody>
+    </table>
+  </div>
 </div>
+
 
 <script>
 const API_URL = '/.netlify/functions/gs-proxy';
