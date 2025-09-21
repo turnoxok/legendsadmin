@@ -102,41 +102,59 @@ function hideLoader(){ loader.classList.add("hidden"); }
 window.addEventListener("load",()=>{ showLoader(); setTimeout(()=>hideLoader(),1200); });
 
 let clubActual = null; // variable global
-  let modo = null; // nuevo
+let modo = null;       // nuevo
 
-async function login(){
+async function login() {
   showLoader();
   const usuario = document.getElementById("usuario").value;
   const clave = document.getElementById("clave").value;
-  try{
-    const res = await fetch(API_URL,{
-      method:"POST",
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:"login",usuario,clave})
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "login", usuario, clave })
     });
-    const data = await res.json();
+
+    let data;
+    try {
+      data = await res.json();
+    } catch (err) {
+      const text = await res.text();
+      console.error("Respuesta no es JSON:", text);
+      alert("Error: el servidor no devolvió JSON válido");
+      hideLoader();
+      return;
+    }
+
     hideLoader();
-    if(data.ok){
-      rol = data.rol;          // si querés usar roles más adelante
-      clubActual = data.club;  // <-- guardar club real
-      modo = data.modo;         // <-- guardamos el modo recibido del backend
+
+    if (data.ok) {
+      rol = data.rol;          // opcional si usas roles más adelante
+      clubActual = data.club;  // guarda el club del usuario
+      modo = data.modo;        // guarda el modo (edicion / vista)
+
       document.getElementById("rolText").innerText = usuario;
-      document.getElementById("login").style.display="none";
-      document.getElementById("app").style.display="block";
-      loadPlayers();           // <-- ahora sí, con clubActual definido
+      document.getElementById("login").style.display = "none";
+      document.getElementById("app").style.display = "block";
+
+      loadPlayers();           // carga la tabla de jugadores
 
       // DESHABILITAR botones de pago si es modo 'vista'
-  if(modo === "vista"){
-    document.querySelectorAll("td button").forEach(btn => btn.disabled = true);
+      if (modo === "vista") {
+        document.querySelectorAll("td button").forEach(btn => btn.disabled = true);
+      }
+
+    } else {
+      alert("Usuario o clave incorrectos");
+    }
+
+  } catch (err) {
+    hideLoader();
+    alert("Error de conexión");
+    console.error(err);
   }
-
-
-      
-    } else { alert("Usuario o clave incorrectos"); }
-  } catch(err){ hideLoader(); alert("Error de conexión"); console.error(err);}
 }
-  
- 
 
   
 async function loadPlayers(){
