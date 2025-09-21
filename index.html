@@ -181,8 +181,20 @@ async function loadPlayers(){
 
 async function addPayment(cuil){
   const pagoInput = prompt("Ingrese nuevo pago:");
+
+  // Si el usuario presiona Cancelar, no hacemos nada
+  if(pagoInput === null){
+    return;
+  }
+
   const pago = Number(pagoInput);
-  if(isNaN(pago)){ alert("Pago no válido"); return; }
+
+  // Validar que sea un número mayor a 0
+  if(isNaN(pago) || pago <= 0){ 
+    alert("Pago no válido"); 
+    return; 
+  }
+
   showLoader();
   try{
     const res = await fetch(API_URL,{
@@ -191,9 +203,15 @@ async function addPayment(cuil){
       body:JSON.stringify({action:"addPayment",cuil,pago})
     });
     const data = await res.json();
-    if(data.ok){ loadPlayers(); } else alert("Error: "+data.error);
-  } catch(err){ alert("Error de red"); console.error(err); }
-  finally{ hideLoader(); }
+    if(data.ok){ 
+      loadPlayers(); 
+    } else alert("Error: "+data.error);
+  } catch(err){ 
+    alert("Error de red"); 
+    console.error(err); 
+  } finally { 
+    hideLoader(); 
+  }
 }
 
 function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
