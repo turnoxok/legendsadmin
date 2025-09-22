@@ -254,5 +254,11 @@ function renderTable(players){
 // Polling cada 90s
 setInterval(loadPlayers,90000);
 </script>
+  <script>
+  if (location.protocol !== 'https:') {
+    location.replace(`https:${location.href.substring(location.protocol.length)}`);
+  }
+</script>
+
 </body>
 </html>
