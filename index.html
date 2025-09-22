@@ -180,17 +180,17 @@ async function loadPlayers(){
 }
 
 async function addPayment(cuil){
-  const pagoInput = prompt("Ingrese nuevo Abono:");
+  const abonoInput = prompt("Ingrese nuevo Abono:");
 
   // Si el usuario presiona Cancelar, no hacemos nada
-  if(pagoInput === null){
+  if(abonoInput === null){
     return;
   }
 
-  const pago = Number(pagoInput);
+  const abono = Number(abonoInput);
 
   // Validar que sea un número mayor a 0
-  if(isNaN(pago) || pago <= 0){ 
+  if(isNaN(abono) || abono <= 0){ 
     alert("Abono no válido"); 
     return; 
   }
@@ -200,7 +200,7 @@ async function addPayment(cuil){
     const res = await fetch(API_URL,{
       method:"POST",
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:"addPayment",cuil,pago})
+      body:JSON.stringify({action:"addPayment",cuil,abono})
     });
     const data = await res.json();
     if(data.ok){ 
@@ -219,33 +219,33 @@ function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); 
 function renderTable(players){
   const table = document.getElementById("players");
   table.innerHTML="";
-  let total=0,pagos=0,saldos=0;
+  let total=0,abonos=0,saldos=0;
 
   players.forEach(p=>{
     const totalNum = Number(p.Total)||0;
-    const pagoNum = Number(p.Pago)||0;
-    const saldoNum = Number(p.Saldo)||(totalNum-pagoNum);
-    total+=totalNum; pagos+=pagoNum; saldos+=saldoNum;
+    const abonoNum = Number(p.Abono)||0;
+    const saldoNum = Number(p.Saldo)||(totalNum-abonoNum);
+    total+=totalNum; abonos+=abonoNum; saldos+=saldoNum;
 
     const tr = document.createElement("tr");
     if(saldoNum===0) tr.classList.add("fullyPaid");
 
-    let botonPago = `<button onclick="addPayment('${p["CUIL/CUIT"]}')">Agregar Abono</button>`;
+    let botonAbono = `<button onclick="addPayment('${p["CUIL/CUIT"]}')">Agregar Abono</button>`;
     if(modo === "vista"){
-      botonPago = `<button onclick="alert('No tenés permiso para agregar pagos')">Agregar Abono</button>`;
+      botonAbono = `<button onclick="alert('No tenés permiso para agregar abonos')">Agregar Abono</button>`;
     }
 
     tr.innerHTML = `<td>${p.Nombre} ${p.Apellido}</td>
                     <td>${p["CUIL/CUIT"]}</td>
                     <td>${formatCurrency(totalNum)}</td>
-                    <td>${formatCurrency(pagoNum)}</td>
+                    <td>${formatCurrency(abonoNum)}</td>
                     <td>${formatCurrency(saldoNum)}</td>
-                    <td>${botonPago}</td>`;
+                    <td>${botonAbono}</td>`;
     table.appendChild(tr);
   });
 
   document.getElementById("totales").innerText=
-    `Total: ${formatCurrency(total)} | Pagos: ${formatCurrency(pagos)} | Saldo: ${formatCurrency(saldos)}`;
+    `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
 
   document.getElementById("felicitaciones").innerText = 
     (saldos===0) ? " 🎉 ¡Todos los jugadores de tu club ya están Abonados!" : "";
