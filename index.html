@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tilcara Legends | Control de Pagos</title>
-  <meta name="description" content="Control de pagos de jugadores por club">
+  <title>Tilcara Legends | Control de Inscripciones</title>
+  <meta name="description" content="Control de Inscripciones de jugadores por club">
   <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
   <meta name="theme-color" content="#084D1F">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,7 +110,7 @@ th, td {
   <div style="width:100%; overflow-x:auto; margin-top:10px;">
     <table>
       <thead>
-        <tr><th>Nombre</th><th>CUIL/CUIT</th><th>Total</th><th>Pago</th><th>Saldo</th><th>Acción</th></tr>
+        <tr><th>Nombre</th><th>CUIL/CUIT</th><th>Total</th><th>Abono</th><th>Saldo</th><th>Acción</th></tr>
       </thead>
       <tbody id="players"></tbody>
     </table>
@@ -180,7 +180,7 @@ async function loadPlayers(){
 }
 
 async function addPayment(cuil){
-  const pagoInput = prompt("Ingrese nuevo pago:");
+  const pagoInput = prompt("Ingrese nuevo Abono:");
 
   // Si el usuario presiona Cancelar, no hacemos nada
   if(pagoInput === null){
@@ -191,7 +191,7 @@ async function addPayment(cuil){
 
   // Validar que sea un número mayor a 0
   if(isNaN(pago) || pago <= 0){ 
-    alert("Pago no válido"); 
+    alert("Abono no válido"); 
     return; 
   }
 
@@ -230,9 +230,9 @@ function renderTable(players){
     const tr = document.createElement("tr");
     if(saldoNum===0) tr.classList.add("fullyPaid");
 
-    let botonPago = `<button onclick="addPayment('${p["CUIL/CUIT"]}')">Agregar Pago</button>`;
+    let botonPago = `<button onclick="addPayment('${p["CUIL/CUIT"]}')">Agregar Abono</button>`;
     if(modo === "vista"){
-      botonPago = `<button onclick="alert('No tenés permiso para agregar pagos')">Agregar Pago</button>`;
+      botonPago = `<button onclick="alert('No tenés permiso para agregar pagos')">Agregar Abono</button>`;
     }
 
     tr.innerHTML = `<td>${p.Nombre} ${p.Apellido}</td>
@@ -248,7 +248,7 @@ function renderTable(players){
     `Total: ${formatCurrency(total)} | Pagos: ${formatCurrency(pagos)} | Saldo: ${formatCurrency(saldos)}`;
 
   document.getElementById("felicitaciones").innerText = 
-    (saldos===0) ? " 🎉 ¡Todos los jugadores de tu club ya están pagados!" : "";
+    (saldos===0) ? " 🎉 ¡Todos los jugadores de tu club ya están Abonados!" : "";
 }
 
 // Polling cada 90s
