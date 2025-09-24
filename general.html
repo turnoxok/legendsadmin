@@ -196,11 +196,26 @@ function renderTable(players){
   table.innerHTML="";
   let total=0,abonos=0,saldos=0;
 
+  // 👉 contadores adicionales
+  let jugadores = 0;
+  let soloComida = 0;
+  let invitados = 0;
+
   players.forEach(p=>{
     const totalNum = Number(p.Total)||0;
     const abonoNum = Number(p.Abono)||0;
     const saldoNum = Number(p.Saldo)||(totalNum-abonoNum);
     total+=totalNum; abonos+=abonoNum; saldos+=saldoNum;
+
+    // 👉 contadores por tipo entrada
+    if (p["Tipo Entrada"] && p["Tipo Entrada"].toLowerCase().includes("jugador")) {
+      jugadores++;
+    } else if (p["Tipo Entrada"] && p["Tipo Entrada"].toLowerCase().includes("comida")) {
+      soloComida++;
+    }
+
+    // 👉 sumar invitados
+    invitados += Number(p.Invitados)||0;
 
     const tr = document.createElement("tr");
     if(saldoNum===0) tr.classList.add("fullyPaid");
@@ -210,7 +225,8 @@ function renderTable(players){
       botonAbono = `<button onclick="alert('No tenés permiso para agregar abonos')">Agregar Abono</button>`;
     }
 
-    tr.innerHTML = `<td>${p.Fecha||""}</td>
+    tr.innerHTML = `
+      <td>${p.Fecha||""}</td>
       <td>${p.Club||""}</td>
       <td>${p.Nombre||""}</td>
       <td>${p.Apellido||""}</td>
@@ -228,11 +244,23 @@ function renderTable(players){
     table.appendChild(tr);
   });
 
+  // 👉 Totales financieros
   document.getElementById("totales").innerText=
     `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
 
-  document.getElementById("felicitaciones").innerText = 
-    (saldos===0) ? " 🎉 ¡Todos los jugadores ya están Abonados!" : "";
+  // 👉 Resumen de jugadores / invitados
+  const resumen = `
+    🏉 Jugadores: ${jugadores}  
+    🍽️ Solo Comida: ${soloComida}  
+    👥 Invitados: ${invitados}  
+    📊 Total Participantes: ${jugadores + soloComida + invitados}
+  `;
+  document.getElementById("felicitaciones").innerText = resumen;
+
+  // 👉 mensaje de todos abonados
+  if (saldos===0) {
+    document.getElementById("felicitaciones").innerText += "\n🎉 ¡Todos los jugadores ya están Abonados!";
+  }
 }
 
 setInterval(()=>loadPlayersMulti(clubesActuales),90000);
