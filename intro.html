@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Tilcara Legends | Accesos</title>
+  <meta name="description" content="Accesos directos a las apps de Tilcara Legends.">
+
+  <!-- Icono -->
+  <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
+
+  <!-- Colores navegador -->
+  <meta name="theme-color" content="#084D1F">
+
+  <!-- Tipografía -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      background-color: #F5F6F2;
+      color: #084D1F;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      margin: 0;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+
+    .btn-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .btn {
+      background: #084D1F;
+      color: #F5F6F2;
+      text-decoration: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: background 0.2s ease-in-out, transform 0.1s ease-in-out;
+    }
+
+    .btn:hover {
+      background: #0A702A;
+      transform: scale(1.03);
+    }
+
+    .portada img {
+      max-width: 160px;
+      margin-bottom: 25px;
+    }
+
+    /* Responsive */
+    @media (min-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+      .btn {
+        font-size: 1.1rem;
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Logo -->
+  <div class="portada">
+    <img src="https://i.ibb.co/nN8LPTjD/logo-verde.png" alt="Tilcara Legends Logo">
+  </div>
+
+  <h1>Accesos Tilcara Legends</h1>
+
+  <div class="btn-container">
+    <a href="https://tilcaralegends.netlify.app/" class="btn">Inscripción</a>
+    <a href="https://adminlegends.netlify.app/" class="btn">Administración</a>
+    <a href="https://concursolegends.netlify.app/" class="btn">Concurso</a>
+    <a href="https://precioslegends.netlify.app/" class="btn">Fijación de Precios</a>
+  </div>
+</body>
+</html>
