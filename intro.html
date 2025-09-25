@@ -20,21 +20,26 @@
 
   <style>
      body {
-      font-family: "Montserrat", sans-serif;
-      background: linear-gradient(120deg, #e8f5e9, #f5f6f2);
-      background-size: 200% 200%;
-      color: #084D1F;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      margin: 0;
-      text-align: center;
-      animation: bgFade 3s ease forwards;
-    }
+    font-family: "Montserrat", sans-serif;
+    background: linear-gradient(120deg, #e8f5e9, #f5f6f2, #e0f2f1);
+    background-size: 400% 400%;
+    color: #084D1F;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    margin: 0;
+    text-align: center;
+    animation: bgMove 10s ease infinite; /* 👈 bucle */
+  }
 
+  @keyframes bgMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
     h1 {
       margin-bottom: 30px;
       font-size: 1.6rem;
