@@ -19,9 +19,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
   <style>
-    body {
+     body {
       font-family: "Montserrat", sans-serif;
-      background: linear-gradient(120deg, #e8f5e9, #f5f6f2, #084D1F);
+      background: linear-gradient(120deg, #e8f5e9, #f5f6f2);
       background-size: 200% 200%;
       color: #084D1F;
       display: flex;
@@ -34,6 +34,7 @@
       text-align: center;
       animation: bgFade 3s ease forwards;
     }
+
     h1 {
       margin-bottom: 30px;
       font-size: 1.6rem;
@@ -89,6 +90,7 @@
     .btn-container p:nth-of-type(3) { animation-delay: 1s; }
     .btn-container p:nth-of-type(4) { animation-delay: 1.2s; }
     .btn-container p:nth-of-type(5) { animation-delay: 1.4s; }
+    .btn-container p:nth-of-type(6) { animation-delay: 1.6s; }
 
     .portada img {
       max-width: 160px;
@@ -114,6 +116,11 @@
 
     @keyframes zoomIn {
       to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes bgFade {
+      from { background-position: 0% 50%; opacity: 0; }
+      to { background-position: 100% 50%; opacity: 1; }
     }
 
     /* Responsive */
