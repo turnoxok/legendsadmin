@@ -40,7 +40,7 @@
     button:hover { background:#0A702A; }
 
     #totales { margin-top:10px; font-weight:bold; text-align:center; }
-    #felicitaciones { margin-top:10px; color:green; font-weight:bold; text-align:center; }
+    #felicitaciones { margin-top:10px; color:#084D1F; font-weight:bold; text-align:center; }
 
     @media(max-width:768px){
       input, button{width:100%; font-size:14px; padding:10px;}
@@ -243,10 +243,10 @@ function renderTable(players){
     `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
 
   const resumen = `
-    🏉 Jugadores: ${jugadores}  
-    🍽️ Solo Comida: ${soloComida}  
-    👥 Invitados: ${invitados}  
-    📊 Total Participantes: ${jugadores + soloComida + invitados}
+    Jugadores: ${jugadores}  
+    Solo Comida: ${soloComida}  
+    Invitados: ${invitados}  
+    Total Participantes: ${jugadores + soloComida + invitados}
   `;
   document.getElementById("felicitaciones").innerText = resumen;
 
