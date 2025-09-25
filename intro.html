@@ -37,6 +37,9 @@
       margin-bottom: 30px;
       font-size: 1.6rem;
       font-weight: 800;
+      opacity: 0;
+      animation: fadeInDown 1s ease forwards;
+      animation-delay: 0.3s;
     }
 
     .btn-container {
@@ -56,6 +59,9 @@
       font-weight: 600;
       font-size: 1rem;
       transition: background 0.2s ease-in-out, transform 0.1s ease-in-out;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease forwards;
     }
 
     .btn:hover {
@@ -63,9 +69,50 @@
       transform: scale(1.03);
     }
 
+    .btn-container a:nth-child(1) { animation-delay: 0.5s; }
+    .btn-container a:nth-child(3) { animation-delay: 0.7s; }
+    .btn-container a:nth-child(5) { animation-delay: 0.9s; }
+    .btn-container a:nth-child(7) { animation-delay: 1.1s; }
+    .btn-container a:nth-child(9) { animation-delay: 1.3s; }
+
+    .btn-container p {
+      position: relative;
+      top: -20px;
+      font-size: 14px;
+      opacity: 0;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    .btn-container p:nth-of-type(1) { animation-delay: 0.6s; }
+    .btn-container p:nth-of-type(2) { animation-delay: 0.8s; }
+    .btn-container p:nth-of-type(3) { animation-delay: 1s; }
+    .btn-container p:nth-of-type(4) { animation-delay: 1.2s; }
+    .btn-container p:nth-of-type(5) { animation-delay: 1.4s; }
+
     .portada img {
       max-width: 160px;
       margin-bottom: 25px;
+      opacity: 0;
+      transform: scale(0.8);
+      animation: zoomIn 1s ease forwards;
+    }
+
+    /* ANIMACIONES */
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes zoomIn {
+      to { opacity: 1; transform: scale(1); }
     }
 
     /* Responsive */
@@ -90,25 +137,20 @@
 
   <div class="btn-container">
     <a href="https://tilcaralegends.netlify.app/" class="btn">Form. Inscripción</a>
-    
-    <p style="position: relative; top:-25px; font-size: 14px;">Sin Clave</p>
-    
+    <p>Sin Clave</p>
+
     <a href="administradorlegends.netlify.app" class="btn">Jugadores de Tilcara</a>
-    
-    <p style="position: relative; top:-25px; font-size: 14px;">Clave de visualización usuario: Legends | Clave: Hola123</p>
-    
+    <p>Clave de visualización usuario: Legends | Clave: Hola123</p>
+
     <a href="administradorlegends.netlify.app/general" class="btn">Jugadores x Equipos</a>
-    
-    <p style="position: relative; top:-25px; font-size: 14px;">Clave de visualización usuario: Administrador | Clave: Clubes</p>
-    
+    <p>Clave de visualización usuario: Administrador | Clave: Clubes</p>
+
     <a href="https://concursolegends.netlify.app/" class="btn">Concurso de Precios</a>
-    
-    <p style="position: relative; top:-25px; font-size: 14px;">Clave de visualización usuario: Legends | Clave: Hola123</p>
-    
-    <p style="position: relative; top:-25px; font-size: 14px;">Clave de edición (usuario y clave privada)</p>
-    
+    <p>Clave de visualización usuario: Legends | Clave: Hola123</p>
+    <p>Clave de edición (usuario y clave privada)</p>
+
     <a href="" class="btn">Ingresos | Egresos</a>
-    <p style="position: relative; top:-25px; font-size: 14px;">Sitio en Desarrollo</p>
+    <p>Sitio en Desarrollo</p>
   </div>
 </body>
 </html>
