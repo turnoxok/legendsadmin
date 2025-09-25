@@ -88,17 +88,14 @@
           <th>Club</th>
           <th>Nombre</th>
           <th>Apellido</th>
-          
           <th>Edad</th>
           <th>CUIL/CUIT</th>
-          
           <th>Tipo Entrada</th>
           <th>Invitados</th>
           <th>Total</th>
           <th>Abono</th>
           <th>Saldo</th>
           <th>Acción</th>
-          
         </tr>
       </thead>
       <tbody id="players"></tbody>
@@ -154,15 +151,20 @@ async function loadPlayersMulti(clubes){
   showLoader();
   let all = [];
   try {
-    for(const club of clubes){
-      const res = await fetch(API_URL,{
+    // 🚀 ahora en paralelo
+    const promises = clubes.map(club => 
+      fetch(API_URL,{
         method:"POST",
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:"getPlayers", club})
-      });
-      const data = await res.json();
+      }).then(r => r.json())
+    );
+
+    const results = await Promise.all(promises);
+    results.forEach(data => {
       if(data.ok) all = all.concat(data.players);
-    }
+    });
+
     renderTable(all);
   } catch(err){ alert("Error de red"); console.error(err); }
   finally{ hideLoader(); }
@@ -195,7 +197,6 @@ function renderTable(players){
   table.innerHTML="";
   let total=0,abonos=0,saldos=0;
 
-  // 👉 contadores adicionales
   let jugadores = 0;
   let soloComida = 0;
   let invitados = 0;
@@ -206,14 +207,12 @@ function renderTable(players){
     const saldoNum = Number(p.Saldo)||(totalNum-abonoNum);
     total+=totalNum; abonos+=abonoNum; saldos+=saldoNum;
 
-    // 👉 contadores por tipo entrada
     if (p["Tipo Entrada"] && p["Tipo Entrada"].toLowerCase().includes("jugador")) {
       jugadores++;
     } else if (p["Tipo Entrada"] && p["Tipo Entrada"].toLowerCase().includes("comida")) {
       soloComida++;
     }
 
-    // 👉 sumar invitados
     invitados += Number(p.Invitados)||0;
 
     const tr = document.createElement("tr");
@@ -229,10 +228,8 @@ function renderTable(players){
       <td>${p.Club||""}</td>
       <td>${p.Nombre||""}</td>
       <td>${p.Apellido||""}</td>
-      
       <td>${p.Edad||""}</td>
       <td>${p["CUIL/CUIT"]||""}</td>
-      
       <td>${p["Tipo Entrada"]||""}</td>
       <td>${p.Invitados||""}</td>
       <td>${formatCurrency(totalNum)}</td>
@@ -242,11 +239,9 @@ function renderTable(players){
     table.appendChild(tr);
   });
 
-  // 👉 Totales financieros
   document.getElementById("totales").innerText=
     `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
 
-  // 👉 Resumen de jugadores / invitados
   const resumen = `
     🏉 Jugadores: ${jugadores}  
     🍽️ Solo Comida: ${soloComida}  
@@ -255,13 +250,10 @@ function renderTable(players){
   `;
   document.getElementById("felicitaciones").innerText = resumen;
 
-  // 👉 mensaje de todos abonados
   if (saldos===0) {
     document.getElementById("felicitaciones").innerText += "\n🎉 ¡Todos los jugadores ya están Abonados!";
   }
 }
-
-//setInterval(()=>loadPlayersMulti(clubesActuales),90000);
 </script>
 
 <script>
@@ -272,3 +264,5 @@ function renderTable(players){
 
 </body>
 </html>
+
+
