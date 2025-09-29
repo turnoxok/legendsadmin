@@ -3,136 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Resumen Encuentro | Legends</title>
+  <title>Resumen | Legends</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png">
   <meta name="theme-color" content="#084D1F">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-
   <style>
-    body {
-      font-family: "Montserrat", sans-serif;
-      background: #F5F6F2;
-      color: #084D1F;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
-    h1 { margin-bottom: 20px; font-weight: 800; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-      text-align: center;
-      animation: fadeIn 0.8s ease-in;
-    }
-    .card h2 { font-size: 1.2rem; margin-bottom: 10px; }
-    .card p { font-size: 1.4rem; font-weight: bold; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Montserrat",sans-serif;}
+    body{background:#F5F6F2;color:#084D1F;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:15px;}
+    h1{text-align:center;margin:15px 0;font-weight:800;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;width:100%;max-width:1000px;margin-top:15px;}
+    .card{background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,0.1);transition:transform .2s;}
+    .card:hover{transform:translateY(-4px);}
+    .card h2{font-size:1rem;margin-bottom:8px;color:#0A702A;font-weight:600;}
+    .card p{font-size:1.3rem;font-weight:700;}
+    table{width:100%;border-collapse:collapse;margin-top:25px;}
+    th,td{border:1px solid #084D1F;padding:8px;font-size:14px;text-align:center;}
+    th{background:#084D1F;color:#fff;}
+    #loader{position:fixed;top:0;left:0;width:100%;height:100%;background:#084D1F;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:999;}
+    #loader img{width:100px;animation:pulse 1.5s infinite;}
+    #loader p{color:#fff;margin-top:15px;font-size:1.2rem;font-weight:600;}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.15);opacity:.85}100%{transform:scale(1)}}
+    .hidden{display:none!important;}
+    @media(max-width:600px){
+      .card p{font-size:1.1rem;}
+      th,td{font-size:12px;padding:6px;}
     }
   </style>
 </head>
 <body>
-  <h1>📊 Resumen Encuentro Legends</h1>
-
-  <div class="grid">
-    <div class="card">
-      <h2>Ingresos (Abonos)</h2>
-      <p id="ingresos">$0</p>
-    </div>
-    <div class="card">
-      <h2>Egresos</h2>
-      <p id="egresos">$0</p>
-    </div>
-    <div class="card">
-      <h2>Balance</h2>
-      <p id="balance">$0</p>
-    </div>
+  <div id="loader">
+    <img src="https://i.ibb.co/GfJfM48J/Tilcara-logo-con-sombra.png" alt="Cargando">
+    <p>Cargando resumen...</p>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <h2>Jugadores</h2>
-      <p id="jugadores">0</p>
-    </div>
-    <div class="card">
-      <h2>Solo Comida</h2>
-      <p id="soloComida">0</p>
-    </div>
-    <div class="card">
-      <h2>Invitados</h2>
-      <p id="invitados">0</p>
-    </div>
-    <div class="card">
-      <h2>Total Participantes</h2>
-      <p id="participantes">0</p>
-    </div>
-  </div>
+  <h1>📊 Resumen Encuentro de Veteranos</h1>
+  <div class="grid" id="cards"></div>
+
+  <table id="tablaEquipos">
+    <thead>
+      <tr><th>Equipo</th><th>Total Abonos</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
 <script>
 const API_URL = '/.netlify/functions/gs-proxy';
+const loader = document.getElementById("loader");
+const cards = document.getElementById("cards");
+const tablaEquipos = document.querySelector("#tablaEquipos tbody");
 
-// formato $ARS
-function money(n) { return "$" + Number(n).toLocaleString("es-AR"); }
+function showLoader(){ loader.classList.remove("hidden"); }
+function hideLoader(){ loader.classList.add("hidden"); }
 
-async function cargarResumen() {
-  try {
-    // 🚀 Pedir TODOS los jugadores (truco: club vacío = devuelve todos, ajustamos en Apps Script si hace falta)
-    const res = await fetch(API_URL, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ action:"getPlayers", club:"*" })
-    });
-    const data = await res.json();
-    if(!data.ok) throw new Error(data.error);
+function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
 
-    let ingresos = 0, jugadores=0, soloComida=0, invitados=0;
+async function fetchData(action, extra={}){
+  const res = await fetch(API_URL, {
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action,...extra})
+  });
+  return res.json();
+}
 
-    data.players.forEach(p=>{
-      ingresos += Number(p.Abono)||0;
-      if (p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
-      else if (p["Tipo Entrada"]?.toLowerCase().includes("comida")) soloComida++;
-      invitados += Number(p.Invitados)||0;
-    });
+async function loadResumen(){
+  showLoader();
+  try{
+    // jugadores
+    const resJugadores = await fetchData("getPlayers",{club:"TODOS"});
+    let jugadores = 0, comida=0, invitados=0, ingresos=0;
+    let equipos = {};
 
-    document.getElementById("ingresos").innerText = money(ingresos);
-    document.getElementById("jugadores").innerText = jugadores;
-    document.getElementById("soloComida").innerText = soloComida;
-    document.getElementById("invitados").innerText = invitados;
-    document.getElementById("participantes").innerText = jugadores+soloComida+invitados;
+    if(resJugadores.ok){
+      resJugadores.players.forEach(p=>{
+        const abono = Number(p.Abono)||0;
+        ingresos += abono;
 
-    // 🚀 Egresos: hoja aparte
-    const res2 = await fetch(API_URL, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ action:"getEgresos" })
-    });
-    const egresosData = await res2.json();
-    let egresos = 0;
-    if (egresosData.ok) {
-      egresosData.egresos.forEach(e=>{
-        egresos += Number(e.Monto)||0;
+        const club = p.Club||"Sin club";
+        equipos[club] = (equipos[club]||0)+abono;
+
+        if(p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
+        else if(p["Tipo Entrada"]?.toLowerCase().includes("comida")) comida++;
+
+        invitados += Number(p.Invitados)||0;
       });
     }
-    document.getElementById("egresos").innerText = money(egresos);
-    document.getElementById("balance").innerText = money(ingresos-egresos);
 
-  } catch(err){
-    console.error("Error cargando resumen:",err);
-    alert("No se pudo cargar el resumen");
+    // egresos
+    let egresos = 0;
+    try{
+      const resEgresos = await fetchData("getSheet",{hoja:"Egresos"});
+      if(resEgresos.ok && Array.isArray(resEgresos.rows)){
+        resEgresos.rows.forEach(r=>{
+          egresos += Number(r.Monto)||0;
+        });
+      }
+    }catch{console.warn("No se pudo leer hoja Egresos");}
+
+    const balance = ingresos-egresos;
+
+    // render cards
+    cards.innerHTML = `
+      <div class="card"><h2>Ingresos</h2><p>${formatCurrency(ingresos)}</p></div>
+      <div class="card"><h2>Egresos</h2><p>${formatCurrency(egresos)}</p></div>
+      <div class="card"><h2>Balance</h2><p>${formatCurrency(balance)}</p></div>
+      <div class="card"><h2>Jugadores</h2><p>${jugadores}</p></div>
+      <div class="card"><h2>Solo comida</h2><p>${comida}</p></div>
+      <div class="card"><h2>Invitados</h2><p>${invitados}</p></div>
+      <div class="card"><h2>Total participantes</h2><p>${jugadores+comida+invitados}</p></div>
+    `;
+
+    // render equipos
+    tablaEquipos.innerHTML = "";
+    Object.entries(equipos).forEach(([club,total])=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${club}</td><td>${formatCurrency(total)}</td>`;
+      tablaEquipos.appendChild(tr);
+    });
+
+  }catch(err){
+    alert("Error cargando datos");
+    console.error(err);
+  }finally{
+    hideLoader();
   }
 }
 
-cargarResumen();
+window.addEventListener("load",loadResumen);
 </script>
 </body>
 </html>
