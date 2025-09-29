@@ -309,7 +309,8 @@ function processAndRender(){
   document.getElementById('subcounts').innerText = `Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
   document.getElementById('updatedAt').innerText = nowString();
 
-  setLoad(`Datos actualizados, ${rawRows.length} registros`);
+  setLoad(`Datos actualizados, ${totalJugadores + totalSoloComida + totalInvitados} registros`);
+
 
   // recalcular saldo si ya hay egresos cargados
   if(egresosRows.length>0) renderEgresos();
