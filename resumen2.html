@@ -267,6 +267,7 @@ function processAndRender(){
     totalInvitados+=invitados;
   });
 
+
   const tbody=document.querySelector('#clubTable tbody'); tbody.innerHTML='';
   for(const c in byClub){
     const i=byClub[c];
@@ -280,6 +281,7 @@ function processAndRender(){
   document.getElementById('subcounts').innerText=`Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
   document.getElementById('updatedAt').innerText=nowString();
   if(egresosRows.length>0) renderEgresos();
+  setLoad(`Datos actualizados — ${totalJugadores + totalSoloComida + totalInvitados} registros`);
 }
 </script>
 </body>
