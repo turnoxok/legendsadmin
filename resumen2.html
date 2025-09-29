@@ -6,14 +6,12 @@
   <title>Resumen | Legends</title>
   <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png">
   <meta name="theme-color" content="#084D1F">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:"Montserrat",sans-serif;}
-    body{background:#F5F6F2;color:#084D1F;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:15px;}
+    body{background:#F5F6F2;color:#084D1F;font-family:"Montserrat",sans-serif;margin:0;padding:15px;display:flex;flex-direction:column;align-items:center;}
     h1{text-align:center;margin:15px 0;font-weight:800;}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;width:100%;max-width:1000px;margin-top:15px;}
-    .card{background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,0.1);transition:transform .2s;}
+    .card{background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,0.1);transition:.2s;}
     .card:hover{transform:translateY(-4px);}
     .card h2{font-size:1rem;margin-bottom:8px;color:#0A702A;font-weight:600;}
     .card p{font-size:1.3rem;font-weight:700;}
@@ -25,10 +23,6 @@
     #loader p{color:#fff;margin-top:15px;font-size:1.2rem;font-weight:600;}
     @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.15);opacity:.85}100%{transform:scale(1)}}
     .hidden{display:none!important;}
-    @media(max-width:600px){
-      .card p{font-size:1.1rem;}
-      th,td{font-size:12px;padding:6px;}
-    }
   </style>
 </head>
 <body>
@@ -55,52 +49,38 @@ const tablaEquipos = document.querySelector("#tablaEquipos tbody");
 
 function showLoader(){ loader.classList.remove("hidden"); }
 function hideLoader(){ loader.classList.add("hidden"); }
-
 function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
-
-async function fetchData(action, extra={}){
-  const res = await fetch(API_URL, {
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action,...extra})
-  });
-  return res.json();
-}
 
 async function loadResumen(){
   showLoader();
   try{
-    // jugadores
-    const resJugadores = await fetchData("getPlayers",{club:"TODOS"});
-    let jugadores = 0, comida=0, invitados=0, ingresos=0;
-    let equipos = {};
+    // 👉 Igual que general.html
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:"getPlayers", club:"TODOS"})
+    });
+    const data = await res.json();
 
-    if(resJugadores.ok){
-      resJugadores.players.forEach(p=>{
-        const abono = Number(p.Abono)||0;
-        ingresos += abono;
+    if(!data.ok){ alert("Error al cargar datos"); hideLoader(); return; }
 
-        const club = p.Club||"Sin club";
-        equipos[club] = (equipos[club]||0)+abono;
+    let ingresos=0, egresos=0, jugadores=0, comida=0, invitados=0;
+    let equipos={};
 
-        if(p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
-        else if(p["Tipo Entrada"]?.toLowerCase().includes("comida")) comida++;
+    data.players.forEach(p=>{
+      const abono = Number(p.Abono)||0;
+      ingresos += abono;
 
-        invitados += Number(p.Invitados)||0;
-      });
-    }
+      const club = p.Club||"Sin club";
+      equipos[club] = (equipos[club]||0)+abono;
 
-    // egresos
-    let egresos = 0;
-    try{
-      const resEgresos = await fetchData("getSheet",{hoja:"Egresos"});
-      if(resEgresos.ok && Array.isArray(resEgresos.rows)){
-        resEgresos.rows.forEach(r=>{
-          egresos += Number(r.Monto)||0;
-        });
-      }
-    }catch{console.warn("No se pudo leer hoja Egresos");}
+      if(p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
+      else if(p["Tipo Entrada"]?.toLowerCase().includes("comida")) comida++;
 
+      invitados += Number(p.Invitados)||0;
+    });
+
+    // ⚠️ De momento los egresos = 0 hasta que gs-proxy soporte esa hoja
     const balance = ingresos-egresos;
 
     // render cards
@@ -115,19 +95,15 @@ async function loadResumen(){
     `;
 
     // render equipos
-    tablaEquipos.innerHTML = "";
+    tablaEquipos.innerHTML="";
     Object.entries(equipos).forEach(([club,total])=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${club}</td><td>${formatCurrency(total)}</td>`;
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${club}</td><td>${formatCurrency(total)}</td>`;
       tablaEquipos.appendChild(tr);
     });
 
-  }catch(err){
-    alert("Error cargando datos");
-    console.error(err);
-  }finally{
-    hideLoader();
-  }
+  }catch(err){ console.error(err); alert("Error de conexión"); }
+  finally{ hideLoader(); }
 }
 
 window.addEventListener("load",loadResumen);
