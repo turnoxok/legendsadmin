@@ -3,105 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Resumen General | Legends</title>
-  <meta name="description" content="Resumen de inscripciones por club">
-  <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
-  <meta name="theme-color" content="#084D1F">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
+  <title>Resumen | Legends</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png">
   <style>
-    body {
-      font-family: "Montserrat", sans-serif;
-      background: #F5F6F2;
-      color: #084D1F;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 10px;
-      text-align: center;
-    }
-    h1,h2 { margin-bottom: 10px; }
-    #loader { display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .stat { margin: 10px 0; font-weight: bold; font-size: 1.2rem; }
+    body { font-family:"Montserrat",sans-serif; background:#F5F6F2; color:#084D1F; text-align:center; padding:20px;}
+    #loader { display:flex; justify-content:center; align-items:center; height:100vh; }
+    .stat { margin:10px 0; font-weight:bold; font-size:1.2rem; }
+    #resumen { display:none; }
+    input, button { padding:8px; margin:5px; font-size:14px; }
   </style>
 </head>
 <body>
 
-  <h1>Resumen General de Inscripciones</h1>
+<h1>Resumen General</h1>
 
-  <div id="loader">
-    <img src="https://i.ibb.co/GfJfM48J/Tilcara-logo-con-sombra.png" alt="Escudo del Club" width="100">
-  </div>
+<div id="login">
+  <h2>Login</h2>
+  <input id="usuario" placeholder="Usuario">
+  <input id="clave" type="password" placeholder="Clave">
+  <button onclick="login()">Entrar</button>
+</div>
 
-  <div id="resumen" style="display:none;">
-    <div class="stat" id="totalParticipantes"></div>
-    <div class="stat" id="jugadores"></div>
-    <div class="stat" id="soloComida"></div>
-    <div class="stat" id="invitados"></div>
-    <div class="stat" id="totalesDinero"></div>
-  </div>
+<div id="loader" style="display:none;">
+  <p>Cargando datos...</p>
+</div>
 
-  <script>
-    const API_URL = '/.netlify/functions/gs-proxy';
-    const loader = document.getElementById("loader");
-    const resumenDiv = document.getElementById("resumen");
+<div id="resumen">
+  <div class="stat" id="totalParticipantes"></div>
+  <div class="stat" id="jugadores"></div>
+  <div class="stat" id="soloComida"></div>
+  <div class="stat" id="invitados"></div>
+  <div class="stat" id="totalesDinero"></div>
+</div>
 
-    // Clubes a resumir (si querés, podés modificar la lista)
-    const clubes = ["Club1", "Club2", "Club3"]; // ejemplo, reemplazar por clubes reales
+<script>
+const API_URL = '/.netlify/functions/gs-proxy';
+let clubesActuales = [];
 
-    async function loadResumen() {
-      try {
-        const promises = clubes.map(club =>
-          fetch(API_URL, {
-            method: "POST",
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ action: "getPlayers", club })
-          }).then(r => r.json())
-        );
-        const results = await Promise.all(promises);
+function showLoader() { document.getElementById("loader").style.display="flex"; }
+function hideLoader() { document.getElementById("loader").style.display="none"; }
 
-        let allPlayers = [];
-        results.forEach(data => { if(data.ok) allPlayers = allPlayers.concat(data.players); });
+async function login(){
+  const usuario = document.getElementById("usuario").value;
+  const clave = document.getElementById("clave").value;
 
-        renderResumen(allPlayers);
-      } catch(err){
-        alert("Error al cargar los datos");
-        console.error(err);
-      }
+  showLoader();
+  try{
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ action:"login", usuario, clave })
+    });
+    const data = await res.json();
+
+    if(data.ok){
+      clubesActuales = data.club.split(",").map(c=>c.trim());
+      document.getElementById("login").style.display="none";
+      loadResumen(clubesActuales);
+    } else {
+      alert("Usuario o clave incorrectos");
+      hideLoader();
     }
+  } catch(err){
+    console.error(err);
+    alert("Error de conexión");
+    hideLoader();
+  }
+}
 
-    function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
+async function loadResumen(clubes){
+  let allPlayers = [];
+  try{
+    const promises = clubes.map(club =>
+      fetch(API_URL,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ action:"getPlayers", club })
+      }).then(r=>r.json())
+    );
+    const results = await Promise.all(promises);
+    results.forEach(data=>{ if(data.ok) allPlayers = allPlayers.concat(data.players); });
+    renderResumen(allPlayers);
+  } catch(err){
+    console.error(err);
+    alert("Error al cargar los datos");
+  }
+}
 
-    function renderResumen(players){
-      loader.style.display = "none";
-      resumenDiv.style.display = "block";
+function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
 
-      let total=0, abonos=0, saldos=0;
-      let jugadores=0, soloComida=0, invitados=0;
+function renderResumen(players){
+  hideLoader();
+  document.getElementById("resumen").style.display="block";
 
-      players.forEach(p => {
-        const totalNum = Number(p.Total)||0;
-        const abonoNum = Number(p.Abono)||0;
-        const saldoNum = Number(p.Saldo)||(totalNum-abonoNum);
-        total += totalNum; abonos += abonoNum; saldos += saldoNum;
+  let total=0, abonos=0, saldos=0;
+  let jugadores=0, soloComida=0, invitados=0;
 
-        if(p["Tipo Entrada"] && p["Tipo Entrada"].toLowerCase().includes("jugador")) jugadores++;
-        else if(p["Tipo Entrada"] && p["Tipo Entrada"].toLowerCase().includes("comida")) soloComida++;
+  players.forEach(p=>{
+    const totalNum = Number(p.Total)||0;
+    const abonoNum = Number(p.Abono)||0;
+    const saldoNum = Number(p.Saldo)||(totalNum-abonoNum);
+    total += totalNum; abonos += abonoNum; saldos += saldoNum;
 
-        invitados += Number(p.Invitados)||0;
-      });
+    if(p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
+    else if(p["Tipo Entrada"]?.toLowerCase().includes("comida")) soloComida++;
 
-      document.getElementById("totalParticipantes").innerText = `Total Participantes: ${jugadores + soloComida + invitados}`;
-      document.getElementById("jugadores").innerText = `Jugadores: ${jugadores}`;
-      document.getElementById("soloComida").innerText = `Solo Comida: ${soloComida}`;
-      document.getElementById("invitados").innerText = `Invitados: ${invitados}`;
-      document.getElementById("totalesDinero").innerText = `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
-    }
+    invitados += Number(p.Invitados)||0;
+  });
 
-    window.addEventListener("load", loadResumen);
-  </script>
+  document.getElementById("totalParticipantes").innerText = `Total Participantes: ${jugadores + soloComida + invitados}`;
+  document.getElementById("jugadores").innerText = `Jugadores: ${jugadores}`;
+  document.getElementById("soloComida").innerText = `Solo Comida: ${soloComida}`;
+  document.getElementById("invitados").innerText = `Invitados: ${invitados}`;
+  document.getElementById("totalesDinero").innerText = `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
+}
+</script>
 
 </body>
 </html>
