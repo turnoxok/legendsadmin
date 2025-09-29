@@ -235,6 +235,7 @@ async function addEgreso(e){
   if(!fecha||!desc||!monto){ alert("Complete todos los campos"); return; }
 
   const nuevo={Fecha:fecha, Descripcion:desc, Monto:monto, Categoria:cat};
+  console.log('Enviando egreso', nuevo);
 
   try{
     const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'addEgreso', egreso:nuevo})});
