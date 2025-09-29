@@ -161,7 +161,7 @@
 const API = '/.netlify/functions/gs-proxy';
 let clubesActuales = [];
 let rawRows = [];
-let egresosRows = []; // vacío por ahora
+let egresosRows = [];
 
 const loadState = document.getElementById('loadState');
 
@@ -187,6 +187,7 @@ async function login(){
       setLoad("Login OK, cargando datos...");
       document.getElementById('login').style.display='none';
       await loadPlayersMulti(clubesActuales);
+      await loadEgresos(); // 👈 también traemos egresos
     } else {
       setLoad("Login fallido");
       alert("Usuario o clave incorrectos");
@@ -198,7 +199,7 @@ async function login(){
   }
 }
 
-// CARGAR DATOS POR CLUB
+// CARGAR JUGADORES
 async function loadPlayersMulti(clubes){
   rawRows = [];
   setLoad("Cargando jugadores...");
@@ -219,9 +220,55 @@ async function loadPlayersMulti(clubes){
   }
 }
 
-// PROCESAR Y RENDERIZAR
+// CARGAR EGRESOS
+async function loadEgresos(){
+  try{
+    const res = await fetch(API,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'getEgresos'})
+    });
+    const data = await res.json();
+    if(data.ok && data.egresos){
+      egresosRows = data.egresos;
+      renderEgresos();
+    }
+  }catch(err){
+    console.error("Error egresos",err);
+  }
+}
+
+// RENDER EGRESOS
+function renderEgresos(){
+  const list = document.getElementById('egresosList');
+  list.innerHTML='';
+  let totalEgresos=0;
+
+  egresosRows.forEach(e=>{
+    const monto = Number(e['Monto']||0);
+    totalEgresos+=monto;
+
+    const div = document.createElement('div');
+    div.className="egreso-item";
+    div.innerHTML=`
+      <div>
+        <div><strong>${e['Descripcion']||'-'}</strong></div>
+        <div class="smallmuted">${e['Fecha']||''} • ${e['Categoria']||''}</div>
+      </div>
+      <div class="monto">${formatMoney(monto)}</div>
+    `;
+    list.appendChild(div);
+  });
+
+  document.getElementById('egresoCount').innerText = `${egresosRows.length} items`;
+  document.getElementById('egresosTotal').innerText = formatMoney(totalEgresos);
+
+  // recalcular saldo
+  const ingresos = getIngresosTotal();
+  document.getElementById('saldo').innerText = formatMoney(ingresos - totalEgresos);
+}
+
+// PROCESAR INGRESOS
 function processAndRender(){
-  // normalizar y agrupar por club
   const byClub = {};
   let totalAbonos=0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
 
@@ -256,17 +303,23 @@ function processAndRender(){
     tbody.appendChild(tr);
   }
 
-  // top cards
+  // top cards (ingresos + participantes)
   document.getElementById('ingresos').innerText = formatMoney(totalAbonos);
-  document.getElementById('egresosTotal').innerText = formatMoney(0); // egresos vacíos
-  document.getElementById('saldo').innerText = formatMoney(totalAbonos);
   document.getElementById('participantes').innerText = totalJugadores+totalSoloComida+totalInvitados;
   document.getElementById('subcounts').innerText = `Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
   document.getElementById('updatedAt').innerText = nowString();
 
   setLoad(`Datos actualizados, ${rawRows.length} registros`);
+
+  // recalcular saldo si ya hay egresos cargados
+  if(egresosRows.length>0) renderEgresos();
 }
 
+// helper para saldo
+function getIngresosTotal(){
+  return rawRows.reduce((acc,r)=>acc+Number(r['Abono']||0),0);
+}
 </script>
+
 </body>
 </html>
