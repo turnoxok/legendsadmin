@@ -6,9 +6,6 @@
   <title>Resumen Encuentro | Legends</title>
   <meta name="description" content="Resumen financiero y de participantes - Encuentro de veteranos" />
   <link rel="icon" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
   <style>
     :root{
       --bg:#07160d;
@@ -28,7 +25,6 @@
     h1{font-size:1.1rem; margin:0; font-weight:800; letter-spacing:0.4px}
     p.lead{margin:0;color:var(--muted); font-size:0.9rem}
 
-    /* Cards */
     .cards{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
     .card{background:linear-gradient(180deg,rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:8px;}
     .card .small{font-size:0.8rem; color:var(--muted)}
@@ -36,29 +32,24 @@
     .card.positive{border-left:4px solid #2ecc71}
     .card.negative{border-left:4px solid #e74c3c}
 
-    /* Layout two columns */
     .mainGrid{display:grid; grid-template-columns:1fr 380px; gap:12px;}
     .panel{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 8px 30px rgba(2,6,4,0.6);}
 
-    /* Table */
     table{width:100%; border-collapse:collapse; color:var(--text); font-size:0.9rem;}
     th{ text-align:left; font-size:0.8rem; color:var(--muted); padding:8px 6px; }
     td{padding:8px 6px; border-top:1px dashed rgba(255,255,255,0.04)}
     .club-row{display:flex; gap:10px; align-items:center; justify-content:space-between;}
     .smallmuted{font-size:0.85rem; color:var(--muted)}
 
-    /* Egresos list */
     .egreso-item{display:flex; justify-content:space-between; gap:12px; padding:8px; border-radius:10px; background:rgba(0,0,0,0.08); margin-bottom:8px; align-items:center}
     .egreso-item .monto{font-weight:700}
 
-    /* Form */
     .form-row{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
     input, select, button, textarea{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text); padding:10px; border-radius:10px; min-width:0;}
     input::placeholder, textarea::placeholder{color:rgba(255,255,255,0.3)}
     button.primary{background:var(--accent); border:0; color:white; padding:10px 12px; cursor:pointer; border-radius:10px}
     button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px}
 
-    /* mobile tweaks */
     @media(max-width:900px){
       .mainGrid{grid-template-columns:1fr; }
       .cards{grid-template-columns:repeat(2,1fr)}
@@ -70,12 +61,9 @@
       h1{font-size:1rem}
     }
 
-    /* small animations */
     @keyframes logoPop{ from{transform:scale(.8); opacity:0} to{transform:scale(1); opacity:1} }
     .muted-pill{background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:999px; font-size:0.8rem; color:var(--muted)}
-    .chart-wrap{height:220px; display:flex; align-items:center; justify-content:center}
 
-    /* Login */
     #login { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
     #login input { padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.05); color:var(--text); }
     #login button { padding:8px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; }
@@ -91,7 +79,7 @@
     </div>
   </header>
 
-  <!-- login simple -->
+  <!-- login -->
   <div id="login">
     <input id="usuario" placeholder="Usuario">
     <input id="clave" type="password" placeholder="Clave">
@@ -123,7 +111,7 @@
   </div>
 
   <div class="mainGrid">
-    <!-- left: detalle por club + gráfico -->
+    <!-- left: detalle por club -->
     <section class="panel">
       <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
         <div><strong>Detalle por Club</strong><div class="smallmuted">Abonos y conteos</div></div>
@@ -142,13 +130,25 @@
       </div>
     </section>
 
-    <!-- right: egresos -->
+    <!-- right: egresos + formulario -->
     <aside class="panel">
       <div style="display:flex; justify-content:space-between; align-items:center">
-        <div><strong>Egresos</strong><div class="smallmuted">Lista simulada</div></div>
+        <div><strong>Egresos</strong><div class="smallmuted">Lista registrada</div></div>
         <div id="egresoCount" class="muted-pill">0 items</div>
       </div>
       <div id="egresosList" style="margin-top:12px; max-height:280px; overflow:auto; padding-right:6px"></div>
+
+      <!-- Formulario solo edición -->
+      <div id="egresoForm" style="display:none; margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+        <h4>Agregar Egreso</h4>
+        <div class="form-row">
+          <select id="egresoClub"><option value="">Seleccionar Club</option></select>
+          <input type="text" id="egresoDesc" placeholder="Descripción">
+          <input type="number" id="egresoMonto" placeholder="Monto">
+          <input type="date" id="egresoFecha">
+          <button class="primary" onclick="addEgreso()">Agregar</button>
+        </div>
+      </div>
     </aside>
   </div>
 
@@ -161,10 +161,10 @@
 const API = '/.netlify/functions/gs-proxy';
 let clubesActuales = [];
 let rawRows = [];
-let egresosRows = []; // vacío por ahora
+let egresosRows = [];
+let modoUsuario = '';
 
 const loadState = document.getElementById('loadState');
-
 function setLoad(msg){ loadState.innerText = msg||''; }
 function formatMoney(n){ return "$" + Number(n||0).toLocaleString('es-AR'); }
 function nowString(){ return (new Date()).toLocaleString(); }
@@ -183,10 +183,21 @@ async function login(){
     });
     const data = await res.json();
     if(data.ok){
+      modoUsuario = data.modo;
       clubesActuales = data.club.split(',').map(c=>c.trim());
+      if(modoUsuario === "edicion") document.getElementById('egresoForm').style.display='block';
+      // llenar dropdown clubes
+      const egresoSelect = document.getElementById('egresoClub');
+      egresoSelect.innerHTML = '';
+      clubesActuales.forEach(c=>{
+        const opt = document.createElement('option'); opt.value=c; opt.text=c;
+        egresoSelect.appendChild(opt);
+      });
+
       setLoad("Login OK, cargando datos...");
       document.getElementById('login').style.display='none';
       await loadPlayersMulti(clubesActuales);
+      await loadEgresos();
     } else {
       setLoad("Login fallido");
       alert("Usuario o clave incorrectos");
@@ -221,7 +232,6 @@ async function loadPlayersMulti(clubes){
 
 // PROCESAR Y RENDERIZAR
 function processAndRender(){
-  // normalizar y agrupar por club
   const byClub = {};
   let totalAbonos=0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
 
@@ -243,7 +253,6 @@ function processAndRender(){
     totalInvitados+=invitados;
   });
 
-  // tabla por club
   const tbody = document.querySelector('#clubTable tbody');
   tbody.innerHTML='';
   for(const c in byClub){
@@ -256,17 +265,72 @@ function processAndRender(){
     tbody.appendChild(tr);
   }
 
-  // top cards
   document.getElementById('ingresos').innerText = formatMoney(totalAbonos);
-  document.getElementById('egresosTotal').innerText = formatMoney(0); // egresos vacíos
-  document.getElementById('saldo').innerText = formatMoney(totalAbonos);
+  document.getElementById('saldo').innerText = formatMoney(totalAbonos - egresosRows.reduce((a,b)=>a+b.monto,0));
   document.getElementById('participantes').innerText = totalJugadores+totalSoloComida+totalInvitados;
   document.getElementById('subcounts').innerText = `Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
   document.getElementById('updatedAt').innerText = nowString();
-
   setLoad(`Datos actualizados, ${rawRows.length} registros`);
 }
 
+// CARGAR EGRESOS
+async function loadEgresos(){
+  try{
+    const res = await fetch(API,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'getEgresos'})
+    });
+    const data = await res.json();
+    if(data.ok){
+      egresosRows = data.egresos.map(e=>{
+        return {fecha:e['Fecha'], club:e['Club'], descripcion:e['Descripción'], monto:Number(e['Monto']||0)}
+      });
+      renderEgresos();
+    }
+  } catch(err){ console.error(err); }
+}
+
+function renderEgresos(){
+  const container = document.getElementById('egresosList');
+  container.innerHTML='';
+  let total = 0;
+  egresosRows.forEach(e=>{
+    total+=e.monto;
+    const div = document.createElement('div');
+    div.className='egreso-item';
+    div.innerHTML=`<span>${new Date(e.fecha).toLocaleDateString()} • ${e.club} • ${e.descripcion}</span><span class="monto">${formatMoney(e.monto)}</span>`;
+    container.appendChild(div);
+  });
+  document.getElementById('egresoCount').innerText = `${egresosRows.length} items`;
+  document.getElementById('egresosTotal').innerText = formatMoney(total);
+  // actualizar saldo
+  const ingresos = Number(document.getElementById('ingresos').innerText.replace(/[$,.]/g,''));
+  document.getElementById('saldo').innerText = formatMoney(ingresos - total);
+}
+
+// AGREGAR EGRESO
+async function addEgreso(){
+  const club = document.getElementById('egresoClub').value;
+  const desc = document.getElementById('egresoDesc').value.trim();
+  const monto = Number(document.getElementById('egresoMonto').value);
+  const fecha = document.getElementById('egresoFecha').value;
+
+  if(!club || !desc || !monto || !fecha){ alert("Complete todos los campos"); return; }
+
+  try{
+    const res = await fetch(API,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'addEgreso', club, descripcion:desc, monto, fecha})
+    });
+    const data = await res.json();
+    if(data.ok){
+      document.getElementById('egresoDesc').value='';
+      document.getElementById('egresoMonto').value='';
+      document.getElementById('egresoFecha').value='';
+      loadEgresos();
+    } else alert("Error: "+data.error);
+  } catch(err){ console.error(err); alert("Error de conexión"); }
+}
 </script>
 </body>
 </html>
