@@ -3,110 +3,105 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Resumen | Legends</title>
-  <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png">
+  <title>Resumen General | Legends</title>
+  <meta name="description" content="Resumen de inscripciones por club">
+  <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
   <meta name="theme-color" content="#084D1F">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
   <style>
-    body{background:#F5F6F2;color:#084D1F;font-family:"Montserrat",sans-serif;margin:0;padding:15px;display:flex;flex-direction:column;align-items:center;}
-    h1{text-align:center;margin:15px 0;font-weight:800;}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;width:100%;max-width:1000px;margin-top:15px;}
-    .card{background:#fff;border-radius:16px;padding:20px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,0.1);transition:.2s;}
-    .card:hover{transform:translateY(-4px);}
-    .card h2{font-size:1rem;margin-bottom:8px;color:#0A702A;font-weight:600;}
-    .card p{font-size:1.3rem;font-weight:700;}
-    table{width:100%;border-collapse:collapse;margin-top:25px;}
-    th,td{border:1px solid #084D1F;padding:8px;font-size:14px;text-align:center;}
-    th{background:#084D1F;color:#fff;}
-    #loader{position:fixed;top:0;left:0;width:100%;height:100%;background:#084D1F;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:999;}
-    #loader img{width:100px;animation:pulse 1.5s infinite;}
-    #loader p{color:#fff;margin-top:15px;font-size:1.2rem;font-weight:600;}
-    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.15);opacity:.85}100%{transform:scale(1)}}
-    .hidden{display:none!important;}
+    body {
+      font-family: "Montserrat", sans-serif;
+      background: #F5F6F2;
+      color: #084D1F;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 10px;
+      text-align: center;
+    }
+    h1,h2 { margin-bottom: 10px; }
+    #loader { display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .stat { margin: 10px 0; font-weight: bold; font-size: 1.2rem; }
   </style>
 </head>
 <body>
+
+  <h1>Resumen General de Inscripciones</h1>
+
   <div id="loader">
-    <img src="https://i.ibb.co/GfJfM48J/Tilcara-logo-con-sombra.png" alt="Cargando">
-    <p>Cargando resumen...</p>
+    <img src="https://i.ibb.co/GfJfM48J/Tilcara-logo-con-sombra.png" alt="Escudo del Club" width="100">
   </div>
 
-  <h1>📊 Resumen Encuentro de Veteranos</h1>
-  <div class="grid" id="cards"></div>
+  <div id="resumen" style="display:none;">
+    <div class="stat" id="totalParticipantes"></div>
+    <div class="stat" id="jugadores"></div>
+    <div class="stat" id="soloComida"></div>
+    <div class="stat" id="invitados"></div>
+    <div class="stat" id="totalesDinero"></div>
+  </div>
 
-  <table id="tablaEquipos">
-    <thead>
-      <tr><th>Equipo</th><th>Total Abonos</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <script>
+    const API_URL = '/.netlify/functions/gs-proxy';
+    const loader = document.getElementById("loader");
+    const resumenDiv = document.getElementById("resumen");
 
-<script>
-const API_URL = '/.netlify/functions/gs-proxy';
-const loader = document.getElementById("loader");
-const cards = document.getElementById("cards");
-const tablaEquipos = document.querySelector("#tablaEquipos tbody");
+    // Clubes a resumir (si querés, podés modificar la lista)
+    const clubes = ["Club1", "Club2", "Club3"]; // ejemplo, reemplazar por clubes reales
 
-function showLoader(){ loader.classList.remove("hidden"); }
-function hideLoader(){ loader.classList.add("hidden"); }
-function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
+    async function loadResumen() {
+      try {
+        const promises = clubes.map(club =>
+          fetch(API_URL, {
+            method: "POST",
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ action: "getPlayers", club })
+          }).then(r => r.json())
+        );
+        const results = await Promise.all(promises);
 
-async function loadResumen(){
-  showLoader();
-  try{
-    // 👉 Igual que general.html
-    const res = await fetch(API_URL, {
-      method:"POST",
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:"getPlayers", club:"TODOS"})
-    });
-    const data = await res.json();
+        let allPlayers = [];
+        results.forEach(data => { if(data.ok) allPlayers = allPlayers.concat(data.players); });
 
-    if(!data.ok){ alert("Error al cargar datos"); hideLoader(); return; }
+        renderResumen(allPlayers);
+      } catch(err){
+        alert("Error al cargar los datos");
+        console.error(err);
+      }
+    }
 
-    let ingresos=0, egresos=0, jugadores=0, comida=0, invitados=0;
-    let equipos={};
+    function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
 
-    data.players.forEach(p=>{
-      const abono = Number(p.Abono)||0;
-      ingresos += abono;
+    function renderResumen(players){
+      loader.style.display = "none";
+      resumenDiv.style.display = "block";
 
-      const club = p.Club||"Sin club";
-      equipos[club] = (equipos[club]||0)+abono;
+      let total=0, abonos=0, saldos=0;
+      let jugadores=0, soloComida=0, invitados=0;
 
-      if(p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
-      else if(p["Tipo Entrada"]?.toLowerCase().includes("comida")) comida++;
+      players.forEach(p => {
+        const totalNum = Number(p.Total)||0;
+        const abonoNum = Number(p.Abono)||0;
+        const saldoNum = Number(p.Saldo)||(totalNum-abonoNum);
+        total += totalNum; abonos += abonoNum; saldos += saldoNum;
 
-      invitados += Number(p.Invitados)||0;
-    });
+        if(p["Tipo Entrada"] && p["Tipo Entrada"].toLowerCase().includes("jugador")) jugadores++;
+        else if(p["Tipo Entrada"] && p["Tipo Entrada"].toLowerCase().includes("comida")) soloComida++;
 
-    // ⚠️ De momento los egresos = 0 hasta que gs-proxy soporte esa hoja
-    const balance = ingresos-egresos;
+        invitados += Number(p.Invitados)||0;
+      });
 
-    // render cards
-    cards.innerHTML = `
-      <div class="card"><h2>Ingresos</h2><p>${formatCurrency(ingresos)}</p></div>
-      <div class="card"><h2>Egresos</h2><p>${formatCurrency(egresos)}</p></div>
-      <div class="card"><h2>Balance</h2><p>${formatCurrency(balance)}</p></div>
-      <div class="card"><h2>Jugadores</h2><p>${jugadores}</p></div>
-      <div class="card"><h2>Solo comida</h2><p>${comida}</p></div>
-      <div class="card"><h2>Invitados</h2><p>${invitados}</p></div>
-      <div class="card"><h2>Total participantes</h2><p>${jugadores+comida+invitados}</p></div>
-    `;
+      document.getElementById("totalParticipantes").innerText = `Total Participantes: ${jugadores + soloComida + invitados}`;
+      document.getElementById("jugadores").innerText = `Jugadores: ${jugadores}`;
+      document.getElementById("soloComida").innerText = `Solo Comida: ${soloComida}`;
+      document.getElementById("invitados").innerText = `Invitados: ${invitados}`;
+      document.getElementById("totalesDinero").innerText = `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
+    }
 
-    // render equipos
-    tablaEquipos.innerHTML="";
-    Object.entries(equipos).forEach(([club,total])=>{
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${club}</td><td>${formatCurrency(total)}</td>`;
-      tablaEquipos.appendChild(tr);
-    });
+    window.addEventListener("load", loadResumen);
+  </script>
 
-  }catch(err){ console.error(err); alert("Error de conexión"); }
-  finally{ hideLoader(); }
-}
-
-window.addEventListener("load",loadResumen);
-</script>
 </body>
 </html>
