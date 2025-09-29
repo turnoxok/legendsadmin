@@ -1,204 +1,333 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Resumen | Legends</title>
-<meta name="description" content="Resumen de inscripciones y finanzas por club">
-<link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
-<meta name="theme-color" content="#084D1F">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
-<style>
-* { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:"Montserrat",sans-serif; background:#F5F6F2; color:#084D1F; display:flex; flex-direction:column; align-items:center; width:100%; padding:0 5px; }
-h1,h2,h3,h4 { text-align:center; margin:5px 0; }
-
-.portada { display:flex; justify-content:center; align-items:center; width:100%; margin:0 auto; padding:10px 0; }
-.portada img { max-width:100%; height:auto; display:block; border-radius:0 0 12px 12px; }
-
-#loader { position: fixed; top:0; left:0; width:100%; height:100%; background:#084D1F; display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:9999; }
-#loader img { width:120px; height:auto; animation:pulse 1.5s infinite ease-in-out; }
-#loader p { color:#F5F6F2; margin-top:20px; font-size:1.2rem; font-weight:600; letter-spacing:1px; text-align:center; }
-@keyframes pulse { 0%{transform:scale(1);opacity:1;} 50%{transform:scale(1.15);opacity:0.8;} 100%{transform:scale(1);opacity:1;} }
-.hidden { display:none !important; }
-
-#login { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; max-width:400px; margin:20px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:2px 2px 8px rgba(0,0,0,0.1); text-align:center; }
-#login input, #login button { width:100%; margin:5px 0; padding:12px; border-radius:6px; border:1px solid #084D1F; font-size:16px; text-align:center; }
-#login button { background:#084D1F; color:#F5F6F2; cursor:pointer; transition:background 0.2s; }
-#login button:hover { background:#0A702A; }
-
-#resumen { display:none; width:100%; max-width:900px; margin:0 auto; text-align:center; }
-#totales, #felicitaciones { margin:10px 0; font-weight:bold; }
-#ingresos-egresos { margin-top:20px; text-align:left; }
-#ingresos-egresos h2 { margin:10px 0 5px; }
-#ingresos-egresos div { margin:2px 0; font-weight:500; }
-
-table { width:100%; border-collapse:collapse; font-size:14px; margin-top:5px; }
-th, td { border:1px solid #084D1F; padding:6px; text-align:center; word-wrap:break-word; }
-th { background:#084D1F; color:#F5F6F2; }
-tr.totalRow { font-weight:bold; background:#e0e0e0; }
-
-@media(max-width:768px){
-  table, th, td{font-size:13px; padding:5px;}
-  #resumen{padding:15px;}
-  #loader img{width:100px;}
-  input, button{font-size:14px; padding:10px;}
-}
-@media(max-width:480px){
-  table, th, td{font-size:12px; padding:4px;}
-  #resumen{padding:10px;}
-  #loader img{width:80px;}
-  input, button{font-size:12px; padding:5px;}
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resumen Encuentro | Legends</title>
+  <meta name="description" content="Resumen financiero y de participantes - Encuentro de veteranos" />
+  <link rel="icon" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#07160d;
+      --card:#0b2b1a;
+      --accent:#0a702a;
+      --muted:#9fbf9a;
+      --text:#e9f6ef;
+      --glass: rgba(255,255,255,0.03);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family: "Montserrat",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:linear-gradient(180deg,#072015 0%, #0a2014 100%); color:var(--text);}
+    .wrap{max-width:980px; margin:0 auto; padding:18px; display:flex; flex-direction:column; gap:14px;}
+    header{display:flex; gap:12px; align-items:center;}
+    .logo{width:56px; height:56px; border-radius:12px; background:var(--glass); display:flex;align-items:center;justify-content:center; padding:6px; box-shadow:0 6px 18px rgba(0,0,0,0.6); animation:logoPop .9s ease;}
+    .logo img{width:100%; height:100%; object-fit:contain;}
+    h1{font-size:1.1rem; margin:0; font-weight:800; letter-spacing:0.4px}
+    p.lead{margin:0;color:var(--muted); font-size:0.9rem}
+    .cards{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:8px;}
+    .card .small{font-size:0.8rem; color:var(--muted)}
+    .card .big{font-size:1.4rem; font-weight:800; color:var(--text)}
+    .card.positive{border-left:4px solid #2ecc71}
+    .card.negative{border-left:4px solid #e74c3c}
+    .mainGrid{display:grid; grid-template-columns:1fr 380px; gap:12px;}
+    .panel{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 8px 30px rgba(2,6,4,0.6);}
+    .club-row{display:flex; gap:10px; align-items:center; justify-content:space-between;}
+    .smallmuted{font-size:0.85rem; color:var(--muted)}
+    .egreso-item{display:flex; justify-content:space-between; gap:12px; padding:8px; border-radius:10px; background:rgba(0,0,0,0.08); margin-bottom:8px; align-items:center}
+    .egreso-item .monto{font-weight:700}
+    .form-row{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
+    input, select, button, textarea{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text); padding:10px; border-radius:10px; min-width:0;}
+    input::placeholder, textarea::placeholder{color:rgba(255,255,255,0.3)}
+    button.primary{background:var(--accent); border:0; color:white; padding:10px 12px; cursor:pointer; border-radius:10px}
+    button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px}
+    @media(max-width:900px){
+      .mainGrid{grid-template-columns:1fr; }
+      .cards{grid-template-columns:repeat(2,1fr)}
+      .wrap{padding:12px}
+      .logo{width:48px;height:48px}
+    }
+    @media(max-width:420px){
+      .cards{grid-template-columns:1fr; }
+      h1{font-size:1rem}
+    }
+    @keyframes logoPop{ from{transform:scale(.8); opacity:0} to{transform:scale(1); opacity:1} }
+    .muted-pill{background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:999px; font-size:0.8rem; color:var(--muted)}
+    .chart-wrap{height:220px; display:flex; align-items:center; justify-content:center}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <div class="logo"><img src="https://i.ibb.co/nN8LPTjD/logo-verde.png" alt="logo"></div>
+      <div>
+        <h1>Resumen Encuentro — Tilcara Legends</h1>
+        <p class="lead">Finanzas y participantes — vista rápida</p>
+      </div>
+    </header>
 
-<div id="loader">
-  <img src="https://i.ibb.co/GfJfM48J/Tilcara-logo-con-sombra.png" alt="Escudo del Club">
-  <p>Cargando resumen...</p>
-</div>
+    <div class="cards">
+      <div class="card positive">
+        <div class="small">Ingresos (Abonos)</div>
+        <div id="ingresos" class="big">$0</div>
+        <div class="smallmuted">Total sumado por todos los clubes</div>
+      </div>
+      <div class="card negative">
+        <div class="small">Egresos</div>
+        <div id="egresosTotal" class="big">$0</div>
+        <div class="smallmuted">Compras / gastos registrados</div>
+      </div>
+      <div class="card">
+        <div class="small">Saldo Disponible</div>
+        <div id="saldo" class="big">$0</div>
+        <div class="smallmuted">Ingresos - Egresos</div>
+      </div>
+      <div class="card">
+        <div class="small">Participantes</div>
+        <div id="participantes" class="big">0</div>
+        <div class="smallmuted" id="subcounts">Jugadores 0 • Solo comida 0 • Invitados 0</div>
+      </div>
+    </div>
 
-<div class="portada">
-  <img src="https://i.ibb.co/ym93ZMtF/Admin-Jugadores.png" alt="Encuentro Rugby Veteranos">
-</div>
+    <div class="mainGrid">
+      <section class="panel">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+          <div><strong>Detalle por Club</strong><div class="smallmuted">Abonos y conteos</div></div>
+          <div><div class="muted-pill" id="loadState">Cargando...</div></div>
+        </div>
 
-<div id="login">
-  <h2>Login</h2>
-  <input id="usuario" placeholder="Usuario">
-  <input id="clave" type="password" placeholder="Clave">
-  <button onclick="login()">Entrar</button>
-</div>
+        <div style="overflow:auto; max-height:420px; padding-right:6px">
+          <table id="clubTable" style="min-width:100%">
+            <thead>
+              <tr>
+                <th>Club</th><th style="text-align:right">Abono</th><th style="text-align:right">Jug.</th><th style="text-align:right">Comida</th><th style="text-align:right">Inv.</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
 
-<div id="resumen">
-  <h2>Resumen de Participantes y Finanzas</h2>
-  <div id="totales"></div>
-  <div id="felicitaciones"></div>
+        <div style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <input id="clubFilter" placeholder="Filtrar por club (opcional)" style="flex:1" />
+          <button class="ghost" id="btnRefresh">Refrescar</button>
+        </div>
 
-  <div id="ingresos-egresos">
-    <h2>Ingresos por Club</h2>
-    <div id="ingresos"></div>
+        <hr style="opacity:0.06; margin:12px 0;">
+        <div style="margin-top:6px">
+          <div style="display:flex; align-items:center; justify-content:space-between">
+            <strong>Ingresos por Club (gráfica)</strong>
+            <span class="smallmuted">Visual</span>
+          </div>
+          <div class="chart-wrap" style="margin-top:8px">
+            <canvas id="ingresosChart" style="max-height:220px; width:100%"></canvas>
+          </div>
+        </div>
+      </section>
 
-    <h2>Egresos</h2>
-    <table id="egresosTable">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Descripción</th>
-          <th>Monto</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+      <aside class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <div><strong>Egresos</strong><div class="smallmuted">Registrar y ver lista</div></div>
+          <div id="egresoCount" class="muted-pill">0 items</div>
+        </div>
+
+        <div id="egresosList" style="margin-top:12px; max-height:280px; overflow:auto; padding-right:6px"></div>
+
+        <div style="margin-top:10px"><strong>Agregar Egreso</strong></div>
+        <div class="form-row">
+          <input id="e_desc" placeholder="Descripción" />
+          <input id="e_monto" placeholder="Monto (ej 12000)" inputmode="numeric" />
+        </div>
+        <div class="form-row" style="margin-top:8px">
+          <input id="e_fecha" type="date" style="flex:1" />
+          <select id="e_cat" style="flex:1">
+            <option value="Compras">Compras</option>
+            <option value="Logística">Logística</option>
+            <option value="Alquiler">Alquiler</option>
+            <option value="Otros">Otros</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:10px">
+          <button class="primary" id="btnAddEgreso">Agregar</button>
+          <button class="ghost" id="btnClearEgreso">Limpiar</button>
+        </div>
+      </aside>
+    </div>
+
+    <footer style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:8px; color:var(--muted); font-size:0.9rem">
+      <div>Actualizado: <span id="updatedAt">—</span></div>
+      <div><a href="https://wa.me/543435020970?text=Hola%20tengo%20dudas%20con%20el%20formulario%20Legends" target="_blank" style="color:var(--muted); text-decoration:none">Dudas? WhatsApp</a></div>
+    </footer>
   </div>
-</div>
 
 <script>
-const API_URL = '/.netlify/functions/gs-proxy';
-const loader = document.getElementById("loader");
-let clubesActuales = [];
-let modo = null;
+const API = '/.netlify/functions/gs-proxy';
+const loadState = document.getElementById('loadState');
+const btnRefresh = document.getElementById('btnRefresh');
 
-function showLoader(){ loader.classList.remove("hidden"); }
-function hideLoader(){ loader.classList.add("hidden"); }
+let rawRows = [];
+let egresosRows = [];
 
-async function login(){
-  showLoader();
-  const usuario = document.getElementById("usuario").value;
-  const clave = document.getElementById("clave").value;
+function formatMoney(n){ return "$" + Number(n||0).toLocaleString('es-AR'); }
+function nowString(){ return (new Date()).toLocaleString(); }
+function setLoad(text){ loadState.innerText = text || 'Listo'; }
+
+async function fetchSheetByGet(sheetName){
   try{
-    const res = await fetch(API_URL,{
-      method:"POST",
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:"login",usuario,clave})
-    });
+    const res = await fetch(`${API}?hoja=${encodeURIComponent(sheetName)}`);
+    if(!res.ok) throw new Error('respuesta no OK: '+res.status);
     const text = await res.text();
-    let data;
-    try{ data = JSON.parse(text); } catch(e){ console.error("No JSON:",text); alert("Error de servidor"); hideLoader(); return; }
-    hideLoader();
-    if(data.ok){
-      document.getElementById("login").style.display="none";
-      document.getElementById("resumen").style.display="block";
-      clubesActuales = data.club.split(",").map(c=>c.trim());
-      modo = data.modo;
-      loadResumen(clubesActuales);
-    } else { alert("Usuario o clave incorrectos"); }
-  } catch(e){ hideLoader(); alert("Error de conexión"); console.error(e); }
+    try { return JSON.parse(text); } catch(e){
+      const rows = text.trim().split(/\r?\n/).map(r=>r.split('\t'));
+      if(rows.length < 2) return [];
+      const headers = rows.shift().map(h => h.trim());
+      return rows.map(r=>{
+        const obj={};
+        headers.forEach((h,i)=> obj[h]= (r[i]!==undefined? r[i] : ""));
+        return obj;
+      });
+    }
+  }catch(err){ console.warn('GET hoja', sheetName, 'falló:', err.message); return []; }
 }
 
-async function loadResumen(clubes){
-  showLoader();
-  let allPlayers = [];
+async function loadEgresos(){
   try{
-    const promises = clubes.map(c=> fetch(API_URL,{
-      method:"POST",
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:"getPlayers",club:c})
-    }).then(r=>r.json()));
-    const results = await Promise.all(promises);
-    results.forEach(d=>{ if(d.ok) allPlayers = allPlayers.concat(d.players); });
-
-    renderResumen(allPlayers);
-  } catch(e){ console.error(e); alert("Error al traer datos"); }
-  finally{ hideLoader(); }
+    const rows = await fetchSheetByGet('Egresos');
+    egresosRows = rows.map(r => ({
+      Fecha: r.Fecha || r.fecha || '',
+      Descripcion: r.Descripcion || r.descripcion || r.Detalle || '',
+      Monto: Number(r.Monto || r.monto || r.Money || 0) || 0,
+      Categoria: r.Categoria || r.categoria || r.Cat || 'Otros'
+    }));
+  }catch(err){ egresosRows=[]; console.info('No se pudo leer Egresos GET:', err.message);}
+  renderEgresos();
 }
 
-function formatCurrency(n){ return "$"+Number(n).toLocaleString('es-AR'); }
+async function loadRespuestas(options = { tryGet:true, clubFilter: '' }){
+  setLoad('Cargando datos...');
+  rawRows = [];
+  try{
+    if(options.tryGet){
+      const rows = await fetchSheetByGet('Respuestas');
+      if(Array.isArray(rows)) rawRows = rows;
+      setLoad('Datos cargados');
+    }
+  }catch(err){ setLoad('No se pudo cargar Respuestas'); }
+  processAndRender();
+}
 
-function renderResumen(players){
-  let total=0, abonos=0, saldos=0;
-  let jugadores=0, soloComida=0, invitados=0;
+function processAndRender(){
+  const rows = rawRows || [];
+  const byClub = {};
+  let totalAbonos=0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
 
-  players.forEach(p=>{
-    const totalNum=Number(p.Total)||0;
-    const abonoNum=Number(p.Abono)||0;
-    const saldoNum=Number(p.Saldo)||(totalNum-abonoNum);
-    total+=totalNum; abonos+=abonoNum; saldos+=saldoNum;
+  rows.forEach(r=>{
+    const club = r['Club'] || r['club'] || r['Club/Equipo'] || r['Equipo'] || r.B || '';
+    const tipo = (r['Tipo Entrada'] || r['Tipo entrada'] || '').toString().trim();
+    const invitados = Number(r['Invitados']||0)||0;
+    const abono = Number(r['Abono']||0)||0;
+    if(!byClub[club]) byClub[club] = {abono:0, jugadores:0, soloComida:0, invitados:0};
+    byClub[club].abono += abono;
+    byClub[club].invitados += invitados;
 
-    if(p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
-    else if(p["Tipo Entrada"]?.toLowerCase().includes("comida")) soloComida++;
-    invitados += Number(p.Invitados)||0;
+    const t = tipo.toLowerCase();
+    if(t.includes('jugador')) { byClub[club].jugadores++; totalJugadores++; }
+    else if(t.includes('comida') || t.includes('solo')) { byClub[club].soloComida++; totalSoloComida++; }
+    totalAbonos += abono;
+    totalInvitados += invitados;
   });
 
-  document.getElementById("totales").innerText = `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
-  document.getElementById("felicitaciones").innerText = `
-Jugadores: ${jugadores} | Solo Comida: ${soloComida} | Invitados: ${invitados} | Total Participantes: ${jugadores+soloComida+invitados}`;
+  const egTotal = egresosRows.reduce((s,e)=>s+(Number(e.Monto)||0),0);
+  document.getElementById('ingresos').innerText = formatMoney(totalAbonos);
+  document.getElementById('egresosTotal').innerText = formatMoney(egTotal);
+  document.getElementById('saldo').innerText = formatMoney(totalAbonos - egTotal);
 
-  renderIngresosEgresos(players);
-}
+  const participantesCount = totalJugadores+totalSoloComida+totalInvitados;
+  document.getElementById('participantes').innerText = participantesCount;
+  document.getElementById('subcounts').innerText = `Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
 
-function renderIngresosEgresos(players){
-  const ingresosDiv = document.getElementById("ingresos");
-  ingresosDiv.innerHTML="";
-  const ingresosPorClub={};
-  players.forEach(p=>{ ingresosPorClub[p.Club||"Sin Club"]=(ingresosPorClub[p.Club||"Sin Club"]||0)+Number(p.Total||0); });
-  for(let c in ingresosPorClub){
-    const div = document.createElement("div");
-    div.innerText = `${c}: ${formatCurrency(ingresosPorClub[c])}`;
-    ingresosDiv.appendChild(div);
+  const tbody = document.querySelector('#clubTable tbody');
+  tbody.innerHTML='';
+  const clubKeys = Object.keys(byClub).sort((a,b)=> byClub[b].abono - byClub[a].abono);
+  if(clubKeys.length===0){
+    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center; color:var(--muted)">No hay datos. Intenta "Refrescar" con un club en filtro si GET no funciona.</td></tr>`;
+  } else {
+    clubKeys.forEach(club=>{
+      const c = byClub[club];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td style="font-weight:700">${club||'--'}</td>
+                      <td style="text-align:right">${formatMoney(c.abono)}</td>
+                      <td style="text-align:right">${c.jugadores||0}</td>
+                      <td style="text-align:right">${c.soloComida||0}</td>
+                      <td style="text-align:right">${c.invitados||0}</td>`;
+      tbody.appendChild(tr);
+    });
   }
 
-  const egresos=[]; // llenar más adelante
-  const tbody=document.getElementById("egresosTable").querySelector("tbody");
-  tbody.innerHTML="";
-  let totalEgresos=0;
-  egresos.forEach(e=>{
-    totalEgresos+=Number(e.monto)||0;
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${e.fecha}</td><td>${e.descripcion}</td><td>${formatCurrency(e.monto)}</td>`;
-    tbody.appendChild(tr);
-  });
-  const trTotal=document.createElement("tr");
-  trTotal.classList.add("totalRow");
-  trTotal.innerHTML=`<td colspan="2">Total Egresos</td><td>${formatCurrency(totalEgresos)}</td>`;
-  tbody.appendChild(trTotal);
+  const labels = clubKeys.map(k=>k||'--');
+  const dataVals = clubKeys.map(k=>byClub[k].abono);
+  renderChart(labels,dataVals);
+  document.getElementById('updatedAt').innerText = nowString();
+  setLoad('');
 }
 
-if(location.protocol!=='https:'){ location.replace(`https:${location.href.substring(location.protocol.length)}`); }
-</script>
+let chartInstance = null;
+function renderChart(labels,dataVals){
+  const ctx = document.getElementById('ingresosChart').getContext('2d');
+  if(chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx,{
+    type:'doughnut',
+    data:{labels, datasets:[{data:dataVals, backgroundColor:generatePalette(labels.length), hoverOffset:8}]},
+    options:{plugins:{legend:{position:'bottom', labels:{color:'#cfe9d1'}}}, maintainAspectRatio:false}
+  });
+}
+function generatePalette(n){ const base=['#0A702A','#2E8B57','#3CB371','#66CDAA','#8FD6B3','#BCEAD6','#C4F1D4','#E6FFF1']; const out=[]; for(let i=0;i<n;i++) out.push(base[i%base.length]); return out;}
 
+function renderEgresos(){
+  const list = document.getElementById('egresosList');
+  list.innerHTML='';
+  if(!egresosRows || egresosRows.length===0){
+    list.innerHTML=`<div style="color:var(--muted)">No hay egresos registrados.</div>`;
+    document.getElementById('egresoCount').innerText='0 items';
+    return;
+  }
+  egresosRows.sort((a,b)=> new Date(b.Fecha)-new Date(a.Fecha));
+  egresosRows.forEach(e=>{
+    const div=document.createElement('div');
+    div.className='egreso-item';
+    div.innerHTML=`<div><div style="font-weight:700">${e.Descripcion||'Sin descripción'}</div><div class="smallmuted">${e.Categoria||'--'} • ${e.Fecha||''}</div></div><div class="monto">${formatMoney(e.Monto)}</div>`;
+    list.appendChild(div);
+  });
+  document.getElementById('egresoCount').innerText=`${egresosRows.length} items`;
+  processAndRender();
+}
+
+document.getElementById('btnAddEgreso').addEventListener('click', async ()=>{
+  const desc=document.getElementById('e_desc').value.trim();
+  const montoStr=document.getElementById('e_monto').value.trim();
+  const fecha=document.getElementById('e_fecha').value||(new Date()).toISOString().slice(0,10);
+  const cat=document.getElementById('e_cat').value;
+  const monto=Number(montoStr||0);
+  if(!desc || !monto || isNaN(monto)){ alert('Complete descripción y monto válido'); return; }
+  try{
+    const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'addEgreso', Descripcion:desc, Monto:monto, Fecha:fecha, Categoria:cat})});
+    const data=await res.json();
+    if(data.ok){ egresosRows.unshift({Descripcion:desc,Monto:monto,Fecha:fecha,Categoria:cat}); renderEgresos(); document.getElementById('e_desc').value=''; document.getElementById('e_monto').value=''; document.getElementById('e_fecha').value=''; alert('Egreso agregado.'); }
+    else alert('Error backend: '+JSON.stringify(data));
+  }catch(err){ console.error('addEgreso err',err); alert('No se pudo agregar egreso.'); }
+});
+
+document.getElementById('btnClearEgreso').addEventListener('click', ()=>{document.getElementById('e_desc').value=''; document.getElementById('e_monto').value=''; document.getElementById('e_fecha').value='';});
+
+btnRefresh.addEventListener('click', async ()=>{
+  const clubFilter=document.getElementById('clubFilter').value.trim();
+  setLoad('Refrescando...');
+  await loadEgresos();
+  await loadRespuestas({tryGet:true, clubFilter});
+  setLoad('');
+});
+
+(async function init(){ setLoad('Iniciando carga...'); try{ await loadEgresos(); await loadRespuestas({tryGet:true, clubFilter:''}); }catch(err){console.warn('init err',err);} finally{ setLoad(''); }})();
+</script>
 </body>
 </html>
