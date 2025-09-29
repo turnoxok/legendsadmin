@@ -1,288 +1,276 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Resumen Encuentro | Legends</title>
-  <meta name="description" content="Resumen financiero y de participantes - Encuentro de veteranos" />
-  <link rel="icon" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Resumen Encuentro | Legends</title>
+<link rel="icon" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
 
-  <style>
-    :root{
-      --bg:#07160d;
-      --card:#0b2b1a;
-      --accent:#0a702a;
-      --muted:#9fbf9a;
-      --text:#e9f6ef;
-      --glass: rgba(255,255,255,0.03);
-      --radius:14px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%; margin:0; font-family: "Montserrat",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:linear-gradient(180deg,#072015 0%, #0a2014 100%); color:var(--text);}
-    .wrap{max-width:980px; margin:0 auto; padding:18px; display:flex; flex-direction:column; gap:14px;}
-    header{display:flex; gap:12px; align-items:center;}
-    .logo{width:56px; height:56px; border-radius:12px; background:var(--glass); display:flex;align-items:center;justify-content:center; padding:6px; box-shadow:0 6px 18px rgba(0,0,0,0.6); animation:logoPop .9s ease;}
-    .logo img{width:100%; height:100%; object-fit:contain;}
-    h1{font-size:1.1rem; margin:0; font-weight:800; letter-spacing:0.4px}
-    p.lead{margin:0;color:var(--muted); font-size:0.9rem}
+<style>
+:root{
+  --bg:#07160d;
+  --card:#0b2b1a;
+  --accent:#0a702a;
+  --muted:#9fbf9a;
+  --text:#e9f6ef;
+  --glass: rgba(255,255,255,0.03);
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{height:100%; margin:0; font-family: "Montserrat",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:linear-gradient(180deg,#072015 0%, #0a2014 100%); color:var(--text);}
+.wrap{max-width:980px; margin:0 auto; padding:18px; display:flex; flex-direction:column; gap:14px;}
+header{display:flex; gap:12px; align-items:center;}
+.logo{width:56px; height:56px; border-radius:12px; background:var(--glass); display:flex;align-items:center;justify-content:center; padding:6px; box-shadow:0 6px 18px rgba(0,0,0,0.6);}
+.logo img{width:100%; height:100%; object-fit:contain;}
+h1{font-size:1.1rem; margin:0; font-weight:800; letter-spacing:0.4px}
+p.lead{margin:0;color:var(--muted); font-size:0.9rem}
 
-    /* Cards */
-    .cards{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:8px;}
-    .card .small{font-size:0.8rem; color:var(--muted)}
-    .card .big{font-size:1.4rem; font-weight:800; color:var(--text)}
-    .card.positive{border-left:4px solid #2ecc71}
-    .card.negative{border-left:4px solid #e74c3c}
+/* Cards */
+.cards{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:8px;}
+.card .small{font-size:0.8rem; color:var(--muted)}
+.card .big{font-size:1.4rem; font-weight:800; color:var(--text)}
+.card.positive{border-left:4px solid #2ecc71}
+.card.negative{border-left:4px solid #e74c3c}
 
-    /* Layout two columns */
-    .mainGrid{display:grid; grid-template-columns:1fr 380px; gap:12px;}
-    .panel{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 8px 30px rgba(2,6,4,0.6);}
+/* Layout two columns */
+.mainGrid{display:grid; grid-template-columns:1fr 380px; gap:12px;}
+.panel{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 8px 30px rgba(2,6,4,0.6);}
 
-    /* Table */
-    table{width:100%; border-collapse:collapse; color:var(--text); font-size:0.9rem;}
-    th{ text-align:left; font-size:0.8rem; color:var(--muted); padding:8px 6px; }
-    td{padding:8px 6px; border-top:1px dashed rgba(255,255,255,0.04)}
-    .club-row{display:flex; gap:10px; align-items:center; justify-content:space-between;}
-    .smallmuted{font-size:0.85rem; color:var(--muted)}
+/* Table */
+table{width:100%; border-collapse:collapse; color:var(--text); font-size:0.9rem;}
+th{ text-align:left; font-size:0.8rem; color:var(--muted); padding:8px 6px; }
+td{padding:8px 6px; border-top:1px dashed rgba(255,255,255,0.04)}
+.smallmuted{font-size:0.85rem; color:var(--muted)}
 
-    /* Egresos list */
-    .egreso-item{display:flex; justify-content:space-between; gap:12px; padding:8px; border-radius:10px; background:rgba(0,0,0,0.08); margin-bottom:8px; align-items:center}
-    .egreso-item .monto{font-weight:700}
+/* Egresos list */
+.egreso-item{display:flex; justify-content:space-between; gap:12px; padding:8px; border-radius:10px; background:rgba(0,0,0,0.08); margin-bottom:8px; align-items:center}
+.egreso-item .monto{font-weight:700}
 
-    /* Form */
-    .form-row{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
-    input, select, button, textarea{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text); padding:10px; border-radius:10px; min-width:0;}
-    input::placeholder, textarea::placeholder{color:rgba(255,255,255,0.3)}
-    button.primary{background:var(--accent); border:0; color:white; padding:10px 12px; cursor:pointer; border-radius:10px}
-    button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px}
+/* Form */
+#egresoForm{display:none; flex-direction:column; gap:8px; margin-top:12px;}
+#egresoForm input, #egresoForm select, #egresoForm button{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text); padding:10px; border-radius:10px; min-width:0;}
+#egresoForm input::placeholder{color:rgba(255,255,255,0.3)}
+#egresoForm button.primary{background:var(--accent); border:0; color:white; padding:10px 12px; cursor:pointer; border-radius:10px}
 
-    /* mobile tweaks */
-    @media(max-width:900px){
-      .mainGrid{grid-template-columns:1fr; }
-      .cards{grid-template-columns:repeat(2,1fr)}
-      .wrap{padding:12px}
-      .logo{width:48px;height:48px}
-    }
-    @media(max-width:420px){
-      .cards{grid-template-columns:1fr; }
-      h1{font-size:1rem}
-    }
+/* Login */
+#login { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+#login input { padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.05); color:var(--text); }
+#login button { padding:8px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; }
 
-    /* small animations */
-    @keyframes logoPop{ from{transform:scale(.8); opacity:0} to{transform:scale(1); opacity:1} }
-    .muted-pill{background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:999px; font-size:0.8rem; color:var(--muted)}
-    .chart-wrap{height:220px; display:flex; align-items:center; justify-content:center}
+/* Responsive */
+@media(max-width:900px){
+  .mainGrid{grid-template-columns:1fr;}
+  .cards{grid-template-columns:1fr;}
+}
+@media(max-width:420px){
+  h1{font-size:1rem}
+}
 
-    /* Login */
-    #login { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
-    #login input { padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.05); color:var(--text); }
-    #login button { padding:8px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; }
-  </style>
+  #loadState, #egresoCount {
+  font-size: 0.75rem;       /* un poquito más chico */
+  background: rgba(10, 112, 42, 0.2); /* verde suave semitransparente */
+  color: #a8f0b2;           /* verde claro para resaltar */
+  padding: 4px 8px;          /* mantener forma de pill */
+  border-radius: 999px;      /* para que siga siendo redondeado */
+  font-weight: 600;          /* un poquito más destacado */
+}
+
+</style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="logo"><img src="https://i.ibb.co/nN8LPTjD/logo-verde.png" alt="logo"></div>
-    <div>
-      <h1>Resumen Encuentro — Tilcara Legends</h1>
-      <p class="lead">Finanzas y participantes — vista rápida</p>
-    </div>
-  </header>
-
-  <!-- login simple -->
-  <div id="login">
-    <input id="usuario" placeholder="Usuario">
-    <input id="clave" type="password" placeholder="Clave">
-    <button onclick="login()">Entrar</button>
+<header>
+  <div class="logo"><img src="https://i.ibb.co/nN8LPTjD/logo-verde.png" alt="logo"></div>
+  <div>
+    <h1>Resumen Encuentro — Tilcara Legends</h1>
+    <p class="lead">Finanzas y participantes — vista rápida</p>
   </div>
+</header>
 
-  <!-- top cards -->
-  <div class="cards">
-    <div class="card positive">
-      <div class="small">Ingresos (Abonos)</div>
-      <div id="ingresos" class="big">$0</div>
-      <div class="smallmuted">Total sumado por todos los clubes</div>
-    </div>
-    <div class="card negative">
-      <div class="small">Egresos</div>
-      <div id="egresosTotal" class="big">$0</div>
-      <div class="smallmuted">Compras / gastos registrados</div>
-    </div>
-    <div class="card">
-      <div class="small">Saldo Disponible</div>
-      <div id="saldo" class="big">$0</div>
-      <div class="smallmuted">Ingresos - Egresos</div>
-    </div>
-    <div class="card">
-      <div class="small">Participantes</div>
-      <div id="participantes" class="big">0</div>
-      <div class="smallmuted" id="subcounts">Jugadores 0 • Solo comida 0 • Invitados 0</div>
-    </div>
+<!-- login simple -->
+<div id="login">
+  <input id="usuario" placeholder="Usuario">
+  <input id="clave" type="password" placeholder="Clave">
+  <button onclick="login()">Entrar</button>
+</div>
+
+<!-- top cards -->
+<div class="cards">
+  <div class="card positive">
+    <div class="small">Ingresos (Abonos)</div>
+    <div id="ingresos" class="big">$0</div>
+    <div class="smallmuted">Total sumado por todos los clubes</div>
   </div>
-
-  <div class="mainGrid">
-    <!-- left: detalle por club + gráfico -->
-    <section class="panel">
-      <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-        <div><strong>Detalle por Club</strong><div class="smallmuted">Abonos y conteos</div></div>
-        <div class="muted-pill" id="loadState">Esperando login...</div>
-      </div>
-
-      <div style="overflow:auto; max-height:420px; padding-right:6px">
-        <table id="clubTable" style="min-width:100%">
-          <thead>
-            <tr>
-              <th>Club</th><th style="text-align:right">Abono</th><th style="text-align:right">Jug.</th><th style="text-align:right">Comida</th><th style="text-align:right">Inv.</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- right: egresos -->
-    <aside class="panel">
-      <div style="display:flex; justify-content:space-between; align-items:center">
-        <div><strong>Egresos</strong><div class="smallmuted">Lista simulada</div></div>
-        <div id="egresoCount" class="muted-pill">0 items</div>
-      </div>
-      <div id="egresosList" style="margin-top:12px; max-height:280px; overflow:auto; padding-right:6px"></div>
-    </aside>
+  <div class="card negative">
+    <div class="small">Egresos</div>
+    <div id="egresosTotal" class="big">$0</div>
+    <div class="smallmuted">Compras / gastos registrados</div>
   </div>
+  <div class="card">
+    <div class="small">Saldo Disponible</div>
+    <div id="saldo" class="big">$0</div>
+    <div class="smallmuted">Ingresos - Egresos</div>
+  </div>
+  <div class="card">
+    <div class="small">Participantes</div>
+    <div id="participantes" class="big">0</div>
+    <div class="smallmuted" id="subcounts">Jugadores 0 • Solo comida 0 • Invitados 0</div>
+  </div>
+</div>
 
-  <footer style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:8px; color:var(--muted); font-size:0.9rem">
-    <div>Actualizado: <span id="updatedAt">—</span></div>
-  </footer>
+<div class="mainGrid">
+  <!-- left: detalle por club -->
+  <section class="panel">
+    <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+      <div><strong>Detalle por Club</strong><div class="smallmuted">Abonos y conteos</div></div>
+      <div class="muted-pill" id="loadState">Esperando login...</div>
+    </div>
+    <div style="overflow:auto; max-height:420px; padding-right:6px">
+      <table id="clubTable" style="min-width:100%">
+        <thead>
+          <tr>
+            <th>Club</th><th style="text-align:right">Abono</th><th style="text-align:right">Jug.</th><th style="text-align:right">Comida</th><th style="text-align:right">Inv.</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- right: egresos -->
+  <aside class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+      <div><strong>Egresos</strong><div class="smallmuted">Lista de gastos</div></div>
+      <div id="egresoCount" class="muted-pill">0 items</div>
+    </div>
+    <div id="egresosList" style="margin-top:12px; max-height:280px; overflow:auto; padding-right:6px"></div>
+
+    <!-- formulario egresos -->
+    <form id="egresoForm">
+      <input type="date" id="egresoFecha" required>
+      <input type="text" id="egresoDescripcion" placeholder="Descripcion" required>
+      <input type="number" id="egresoMonto" placeholder="Monto" required>
+      <input type="text" id="egresoCategoria" placeholder="Categoria">
+      <button type="submit" class="primary">Agregar Egreso</button>
+    </form>
+  </aside>
+</div>
+
+<footer style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:8px; color:var(--muted); font-size:0.9rem">
+  <div>Actualizado: <span id="updatedAt">—</span></div>
+</footer>
 </div>
 
 <script>
 const API = '/.netlify/functions/gs-proxy';
-let clubesActuales = [];
-let rawRows = [];
-let egresosRows = [];
+let clubesActuales=[], rawRows=[], egresosRows=[], userModo='';
 
-const loadState = document.getElementById('loadState');
-
-function setLoad(msg){ loadState.innerText = msg||''; }
-function formatMoney(n){ return "$" + Number(n||0).toLocaleString('es-AR'); }
+function setLoad(msg){ document.getElementById('loadState').innerText = msg||''; }
+function formatMoney(n){ return "$"+Number(n||0).toLocaleString('es-AR'); }
+function formatDate(d){ const dt=new Date(d); return dt.toLocaleDateString('es-AR'); }
 function nowString(){ return (new Date()).toLocaleString(); }
 
 // LOGIN
 async function login(){
-  const usuario = document.getElementById('usuario').value.trim();
-  const clave = document.getElementById('clave').value.trim();
-  if(!usuario || !clave) { alert("Ingrese usuario y clave"); return; }
+  const u=document.getElementById('usuario').value.trim();
+  const c=document.getElementById('clave').value.trim();
+  if(!u||!c){ alert("Ingrese usuario y clave"); return; }
   setLoad("Verificando...");
-
   try{
-    const res = await fetch(API,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'login', usuario, clave})
-    });
-    const data = await res.json();
+    const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'login', usuario:u, clave:c})});
+    const data=await res.json();
     if(data.ok){
-      clubesActuales = data.club.split(',').map(c=>c.trim());
-      setLoad("Login OK, cargando datos...");
+      clubesActuales = data.club.split(',').map(s=>s.trim());
+      userModo = data.modo||'';
       document.getElementById('login').style.display='none';
+      setLoad("Cargando datos...");
       await loadPlayersMulti(clubesActuales);
-      await loadEgresos(); // 👈 también traemos egresos
-    } else {
-      setLoad("Login fallido");
-      alert("Usuario o clave incorrectos");
-    }
-  } catch(err){
-    console.error(err);
-    setLoad("Error de conexión");
-    alert("Error de conexión");
-  }
+      await loadEgresos();
+      if(userModo.toLowerCase()==='edicion'){
+        document.getElementById('egresoForm').style.display='flex';
+        document.getElementById('egresoForm').addEventListener('submit', addEgreso);
+      }
+    }else{ setLoad("Login fallido"); alert("Usuario o clave incorrectos"); }
+  }catch(err){ console.error(err); setLoad("Error de conexión"); alert("Error de conexión"); }
 }
 
 // CARGAR JUGADORES
 async function loadPlayersMulti(clubes){
-  rawRows = [];
+  rawRows=[];
   setLoad("Cargando jugadores...");
   try{
-    const promises = clubes.map(c => 
-      fetch(API,{
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({action:'getPlayers', club:c})
-      }).then(r=>r.json())
-    );
+    const promises = clubes.map(c=> fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'getPlayers', club:c})}).then(r=>r.json()));
     const results = await Promise.all(promises);
-    results.forEach(data => { if(data.ok && data.players) rawRows.push(...data.players); });
+    results.forEach(d=>{ if(d.ok&&d.players) rawRows.push(...d.players); });
     setLoad("Procesando datos...");
     processAndRender();
-  } catch(err){
-    console.error(err);
-    setLoad("Error al cargar jugadores");
-  }
+  }catch(err){ console.error(err); setLoad("Error al cargar jugadores"); }
 }
 
 // CARGAR EGRESOS
 async function loadEgresos(){
   try{
-    const res = await fetch(API,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'getEgresos'})
-    });
-    const data = await res.json();
-    if(data.ok && data.egresos){
-      egresosRows = data.egresos;
-      renderEgresos();
-    }
-  }catch(err){
-    console.error("Error egresos",err);
-  }
+    const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'getEgresos'})});
+    const data=await res.json();
+    if(data.ok&&data.egresos){ egresosRows=data.egresos; renderEgresos(); }
+  }catch(err){ console.error("Error egresos",err); }
 }
 
 // RENDER EGRESOS
 function renderEgresos(){
-  const list = document.getElementById('egresosList');
-  list.innerHTML='';
-  let totalEgresos=0;
-
+  const list=document.getElementById('egresosList');
+  list.innerHTML=''; let total=0;
   egresosRows.forEach(e=>{
-    const monto = Number(e['Monto']||0);
-    totalEgresos+=monto;
-
-    const div = document.createElement('div');
-    div.className="egreso-item";
-    div.innerHTML=`
-      <div>
-        <div><strong>${e['Descripcion']||'-'}</strong></div>
-        <div class="smallmuted">${e['Fecha']||''} • ${e['Categoria']||''}</div>
-      </div>
-      <div class="monto">${formatMoney(monto)}</div>
-    `;
+    const m=Number(e['Monto']||0); total+=m;
+    const fecha=formatDate(e['Fecha']);
+    const div=document.createElement('div');
+    div.className='egreso-item';
+    div.innerHTML=`<div><div><strong>${e['Descripcion']||'-'}</strong></div><div class="smallmuted">${fecha} • ${e['Categoria']||''}</div></div><div class="monto">${formatMoney(m)}</div>`;
     list.appendChild(div);
   });
+  document.getElementById('egresoCount').innerText=`${egresosRows.length} items`;
+  document.getElementById('egresosTotal').innerText=formatMoney(total);
+  const ingresos = rawRows.reduce((acc,r)=>acc+Number(r['Abono']||0),0);
+  document.getElementById('saldo').innerText=formatMoney(ingresos-total);
+}
 
-  document.getElementById('egresoCount').innerText = `${egresosRows.length} items`;
-  document.getElementById('egresosTotal').innerText = formatMoney(totalEgresos);
+// AGREGAR EGRESO y guardar en hoja
+async function addEgreso(e){
+  e.preventDefault();
+  const fecha=document.getElementById('egresoFecha').value;
+  const desc=document.getElementById('egresoDescripcion').value.trim();
+  const monto=Number(document.getElementById('egresoMonto').value);
+  const cat=document.getElementById('egresoCategoria').value.trim();
+  if(!fecha||!desc||!monto){ alert("Complete todos los campos"); return; }
 
-  // recalcular saldo
-  const ingresos = getIngresosTotal();
-  document.getElementById('saldo').innerText = formatMoney(ingresos - totalEgresos);
+  const nuevo={Fecha:fecha, Descripcion:desc, Monto:monto, Categoria:cat};
+  console.log('Enviando egreso', nuevo);
+
+  try{
+    const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'addEgreso', egreso:nuevo})});
+    const data=await res.json();
+    if(data.ok){
+      egresosRows.push(nuevo);
+      renderEgresos();
+      document.getElementById('egresoForm').reset();
+    }else alert("Error al guardar en hoja de cálculo");
+  }catch(err){ console.error(err); alert("Error al guardar en hoja de cálculo"); }
 }
 
 // PROCESAR INGRESOS
 function processAndRender(){
-  const byClub = {};
-  let totalAbonos=0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
-
+  const byClub={}; let totalAbonos=0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
   rawRows.forEach(r=>{
-    const club = r['Club'] || r['club'] || '--';
-    const tipo = (r['Tipo Entrada']||'').toLowerCase();
-    const invitados = Number(r['Invitados']||0);
-    const abono = Number(r['Abono']||0);
-
-    if(!byClub[club]) byClub[club]={abono:0, jugadores:0, solo:0, invitados:0};
-    byClub[club].abono += abono;
-    if(tipo.includes('jugador')) byClub[club].jugadores +=1;
-    else if(tipo.includes('comida')) byClub[club].solo +=1;
-    byClub[club].invitados += invitados;
+    const club=r['Club']||r['club']||'--';
+    const tipo=(r['Tipo Entrada']||'').toLowerCase();
+    const invitados=Number(r['Invitados']||0);
+    const abono=Number(r['Abono']||0);
+    if(!byClub[club]) byClub[club]={abono:0,jugadores:0,solo:0,invitados:0};
+    byClub[club].abono+=abono;
+    if(tipo.includes('jugador')) byClub[club].jugadores++;
+    else if(tipo.includes('comida')) byClub[club].solo++;
+    byClub[club].invitados+=invitados;
 
     totalAbonos+=abono;
     if(tipo.includes('jugador')) totalJugadores++;
@@ -290,37 +278,22 @@ function processAndRender(){
     totalInvitados+=invitados;
   });
 
-  // tabla por club
-  const tbody = document.querySelector('#clubTable tbody');
-  tbody.innerHTML='';
+
+  const tbody=document.querySelector('#clubTable tbody'); tbody.innerHTML='';
   for(const c in byClub){
-    const info = byClub[c];
-    const tr = document.createElement('tr');
-    tr.innerHTML=`<td>${c}</td><td style="text-align:right">${formatMoney(info.abono)}</td>
-      <td style="text-align:right">${info.jugadores}</td>
-      <td style="text-align:right">${info.solo}</td>
-      <td style="text-align:right">${info.invitados}</td>`;
+    const i=byClub[c];
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${c}</td><td style="text-align:right">${formatMoney(i.abono)}</td><td style="text-align:right">${i.jugadores}</td><td style="text-align:right">${i.solo}</td><td style="text-align:right">${i.invitados}</td>`;
     tbody.appendChild(tr);
   }
 
-  // top cards (ingresos + participantes)
-  document.getElementById('ingresos').innerText = formatMoney(totalAbonos);
-  document.getElementById('participantes').innerText = totalJugadores+totalSoloComida+totalInvitados;
-  document.getElementById('subcounts').innerText = `Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
-  document.getElementById('updatedAt').innerText = nowString();
-
-  setLoad(`Datos actualizados, ${totalJugadores + totalSoloComida + totalInvitados} registros`);
-
-
-  // recalcular saldo si ya hay egresos cargados
+  document.getElementById('ingresos').innerText=formatMoney(totalAbonos);
+  document.getElementById('participantes').innerText=totalJugadores+totalSoloComida+totalInvitados;
+  document.getElementById('subcounts').innerText=`Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
+  document.getElementById('updatedAt').innerText=nowString();
   if(egresosRows.length>0) renderEgresos();
-}
-
-// helper para saldo
-function getIngresosTotal(){
-  return rawRows.reduce((acc,r)=>acc+Number(r['Abono']||0),0);
+  setLoad(`Datos actualizados — ${totalJugadores + totalSoloComida + totalInvitados} registros`);
 }
 </script>
-
 </body>
 </html>
