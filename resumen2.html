@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
 <style>
-* { box-sizing: border-box; margin:0; padding:0; }
+* { box-sizing:border-box; margin:0; padding:0; }
 body { font-family:"Montserrat",sans-serif; background:#F5F6F2; color:#084D1F; display:flex; flex-direction:column; align-items:center; width:100%; padding:0 5px; }
 h1,h2,h3,h4 { text-align:center; margin:5px 0; }
 
@@ -25,8 +25,13 @@ h1,h2,h3,h4 { text-align:center; margin:5px 0; }
 @keyframes pulse { 0%{transform:scale(1);opacity:1;} 50%{transform:scale(1.15);opacity:0.8;} 100%{transform:scale(1);opacity:1;} }
 .hidden { display:none !important; }
 
+#login { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; max-width:400px; margin:20px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:2px 2px 8px rgba(0,0,0,0.1); text-align:center; }
+#login input, #login button { width:100%; margin:5px 0; padding:12px; border-radius:6px; border:1px solid #084D1F; font-size:16px; text-align:center; }
+#login button { background:#084D1F; color:#F5F6F2; cursor:pointer; transition:background 0.2s; }
+#login button:hover { background:#0A702A; }
+
 #resumen { display:none; width:100%; max-width:900px; margin:0 auto; text-align:center; }
-#totalesDinero, #jugadores, #soloComida, #invitados, #totalParticipantes { margin:5px 0; font-weight:bold; }
+#totales, #felicitaciones { margin:10px 0; font-weight:bold; }
 #ingresos-egresos { margin-top:20px; text-align:left; }
 #ingresos-egresos h2 { margin:10px 0 5px; }
 #ingresos-egresos div { margin:2px 0; font-weight:500; }
@@ -40,11 +45,13 @@ tr.totalRow { font-weight:bold; background:#e0e0e0; }
   table, th, td{font-size:13px; padding:5px;}
   #resumen{padding:15px;}
   #loader img{width:100px;}
+  input, button{font-size:14px; padding:10px;}
 }
 @media(max-width:480px){
   table, th, td{font-size:12px; padding:4px;}
   #resumen{padding:10px;}
   #loader img{width:80px;}
+  input, button{font-size:12px; padding:5px;}
 }
 </style>
 </head>
@@ -59,13 +66,17 @@ tr.totalRow { font-weight:bold; background:#e0e0e0; }
   <img src="https://i.ibb.co/ym93ZMtF/Admin-Jugadores.png" alt="Encuentro Rugby Veteranos">
 </div>
 
+<div id="login">
+  <h2>Login</h2>
+  <input id="usuario" placeholder="Usuario">
+  <input id="clave" type="password" placeholder="Clave">
+  <button onclick="login()">Entrar</button>
+</div>
+
 <div id="resumen">
   <h2>Resumen de Participantes y Finanzas</h2>
-  <div id="jugadores"></div>
-  <div id="soloComida"></div>
-  <div id="invitados"></div>
-  <div id="totalParticipantes"></div>
-  <div id="totalesDinero"></div>
+  <div id="totales"></div>
+  <div id="felicitaciones"></div>
 
   <div id="ingresos-egresos">
     <h2>Ingresos por Club</h2>
@@ -88,104 +99,105 @@ tr.totalRow { font-weight:bold; background:#e0e0e0; }
 <script>
 const API_URL = '/.netlify/functions/gs-proxy';
 const loader = document.getElementById("loader");
+let clubesActuales = [];
+let modo = null;
 
 function showLoader(){ loader.classList.remove("hidden"); }
 function hideLoader(){ loader.classList.add("hidden"); }
 
-window.addEventListener("load", async ()=>{
+async function login(){
   showLoader();
+  const usuario = document.getElementById("usuario").value;
+  const clave = document.getElementById("clave").value;
   try{
-    const players = await fetchPlayers();
-    renderResumen(players);
-  } catch(e){ console.error(e); alert("Error al cargar datos"); }
-  finally{ setTimeout(hideLoader,1200); }
-});
-
-async function fetchPlayers(){
-  const res = await fetch(API_URL,{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:"getPlayers"})
-  });
-  const data = await res.json();
-  if(data.ok) return data.players;
-  return [];
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:"login",usuario,clave})
+    });
+    const text = await res.text();
+    let data;
+    try{ data = JSON.parse(text); } catch(e){ console.error("No JSON:",text); alert("Error de servidor"); hideLoader(); return; }
+    hideLoader();
+    if(data.ok){
+      document.getElementById("login").style.display="none";
+      document.getElementById("resumen").style.display="block";
+      clubesActuales = data.club.split(",").map(c=>c.trim());
+      modo = data.modo;
+      loadResumen(clubesActuales);
+    } else { alert("Usuario o clave incorrectos"); }
+  } catch(e){ hideLoader(); alert("Error de conexión"); console.error(e); }
 }
 
-function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
+async function loadResumen(clubes){
+  showLoader();
+  let allPlayers = [];
+  try{
+    const promises = clubes.map(c=> fetch(API_URL,{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:"getPlayers",club:c})
+    }).then(r=>r.json()));
+    const results = await Promise.all(promises);
+    results.forEach(d=>{ if(d.ok) allPlayers = allPlayers.concat(d.players); });
 
-function renderIngresosEgresos(players){
-  // Ingresos por club
-  const ingresosPorClub = {};
-  players.forEach(p=>{
-    const club = p.Club || "Sin Club";
-    const total = Number(p.Total) || 0;
-    ingresosPorClub[club] = (ingresosPorClub[club] || 0) + total;
-  });
-
-  const ingresosDiv = document.getElementById("ingresos");
-  ingresosDiv.innerHTML = "";
-  for(let club in ingresosPorClub){
-    const div = document.createElement("div");
-    div.innerText = `${club}: ${formatCurrency(ingresosPorClub[club])}`;
-    ingresosDiv.appendChild(div);
-  }
-
-  // Egresos: ejemplo vacío, se llenará cuando agregues datos
-  const egresos = [
-    // {fecha:"2025-09-28", descripcion:"Alquiler cancha", monto:5000},
-  ];
-
-  const tbody = document.getElementById("egresosTable").querySelector("tbody");
-  tbody.innerHTML = "";
-  let totalEgresos = 0;
-  egresos.forEach(e=>{
-    totalEgresos += Number(e.monto) || 0;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${e.fecha}</td>
-      <td>${e.descripcion}</td>
-      <td>${formatCurrency(e.monto)}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  // Total egresos
-  const trTotal = document.createElement("tr");
-  trTotal.classList.add("totalRow");
-  trTotal.innerHTML = `
-    <td colspan="2">Total Egresos</td>
-    <td>${formatCurrency(totalEgresos)}</td>
-  `;
-  tbody.appendChild(trTotal);
+    renderResumen(allPlayers);
+  } catch(e){ console.error(e); alert("Error al traer datos"); }
+  finally{ hideLoader(); }
 }
+
+function formatCurrency(n){ return "$"+Number(n).toLocaleString('es-AR'); }
 
 function renderResumen(players){
   let total=0, abonos=0, saldos=0;
   let jugadores=0, soloComida=0, invitados=0;
 
   players.forEach(p=>{
-    const totalNum = Number(p.Total)||0;
-    const abonoNum = Number(p.Abono)||0;
-    const saldoNum = Number(p.Saldo)||(totalNum-abonoNum);
-    total += totalNum; abonos += abonoNum; saldos += saldoNum;
+    const totalNum=Number(p.Total)||0;
+    const abonoNum=Number(p.Abono)||0;
+    const saldoNum=Number(p.Saldo)||(totalNum-abonoNum);
+    total+=totalNum; abonos+=abonoNum; saldos+=saldoNum;
 
     if(p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
     else if(p["Tipo Entrada"]?.toLowerCase().includes("comida")) soloComida++;
-
     invitados += Number(p.Invitados)||0;
   });
 
-  document.getElementById("jugadores").innerText = `Jugadores: ${jugadores}`;
-  document.getElementById("soloComida").innerText = `Solo Comida: ${soloComida}`;
-  document.getElementById("invitados").innerText = `Invitados: ${invitados}`;
-  document.getElementById("totalParticipantes").innerText = `Total Participantes: ${jugadores + soloComida + invitados}`;
-  document.getElementById("totalesDinero").innerText = `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
+  document.getElementById("totales").innerText = `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
+  document.getElementById("felicitaciones").innerText = `
+Jugadores: ${jugadores} | Solo Comida: ${soloComida} | Invitados: ${invitados} | Total Participantes: ${jugadores+soloComida+invitados}`;
 
   renderIngresosEgresos(players);
-
-  document.getElementById("resumen").style.display="block";
 }
+
+function renderIngresosEgresos(players){
+  const ingresosDiv = document.getElementById("ingresos");
+  ingresosDiv.innerHTML="";
+  const ingresosPorClub={};
+  players.forEach(p=>{ ingresosPorClub[p.Club||"Sin Club"]=(ingresosPorClub[p.Club||"Sin Club"]||0)+Number(p.Total||0); });
+  for(let c in ingresosPorClub){
+    const div = document.createElement("div");
+    div.innerText = `${c}: ${formatCurrency(ingresosPorClub[c])}`;
+    ingresosDiv.appendChild(div);
+  }
+
+  const egresos=[]; // llenar más adelante
+  const tbody=document.getElementById("egresosTable").querySelector("tbody");
+  tbody.innerHTML="";
+  let totalEgresos=0;
+  egresos.forEach(e=>{
+    totalEgresos+=Number(e.monto)||0;
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${e.fecha}</td><td>${e.descripcion}</td><td>${formatCurrency(e.monto)}</td>`;
+    tbody.appendChild(tr);
+  });
+  const trTotal=document.createElement("tr");
+  trTotal.classList.add("totalRow");
+  trTotal.innerHTML=`<td colspan="2">Total Egresos</td><td>${formatCurrency(totalEgresos)}</td>`;
+  tbody.appendChild(trTotal);
+}
+
+if(location.protocol!=='https:'){ location.replace(`https:${location.href.substring(location.protocol.length)}`); }
 </script>
 
 </body>
