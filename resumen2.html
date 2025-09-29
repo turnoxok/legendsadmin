@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resumen Encuentro | Legends</title>
+  <meta name="theme-color" content="#084D1F">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: "Montserrat", sans-serif;
+      background: #F5F6F2;
+      color: #084D1F;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { margin-bottom: 20px; font-weight: 800; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+      animation: fadeIn 0.8s ease-in;
+    }
+    .card h2 { font-size: 1.2rem; margin-bottom: 10px; }
+    .card p { font-size: 1.4rem; font-weight: bold; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 Resumen Encuentro Legends</h1>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Ingresos (Abonos)</h2>
+      <p id="ingresos">$0</p>
+    </div>
+    <div class="card">
+      <h2>Egresos</h2>
+      <p id="egresos">$0</p>
+    </div>
+    <div class="card">
+      <h2>Balance</h2>
+      <p id="balance">$0</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Jugadores</h2>
+      <p id="jugadores">0</p>
+    </div>
+    <div class="card">
+      <h2>Solo Comida</h2>
+      <p id="soloComida">0</p>
+    </div>
+    <div class="card">
+      <h2>Invitados</h2>
+      <p id="invitados">0</p>
+    </div>
+    <div class="card">
+      <h2>Total Participantes</h2>
+      <p id="participantes">0</p>
+    </div>
+  </div>
+
+<script>
+const API_URL = '/.netlify/functions/gs-proxy';
+
+// formato $ARS
+function money(n) { return "$" + Number(n).toLocaleString("es-AR"); }
+
+async function cargarResumen() {
+  try {
+    // 🚀 Pedir TODOS los jugadores (truco: club vacío = devuelve todos, ajustamos en Apps Script si hace falta)
+    const res = await fetch(API_URL, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ action:"getPlayers", club:"*" })
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error);
+
+    let ingresos = 0, jugadores=0, soloComida=0, invitados=0;
+
+    data.players.forEach(p=>{
+      ingresos += Number(p.Abono)||0;
+      if (p["Tipo Entrada"]?.toLowerCase().includes("jugador")) jugadores++;
+      else if (p["Tipo Entrada"]?.toLowerCase().includes("comida")) soloComida++;
+      invitados += Number(p.Invitados)||0;
+    });
+
+    document.getElementById("ingresos").innerText = money(ingresos);
+    document.getElementById("jugadores").innerText = jugadores;
+    document.getElementById("soloComida").innerText = soloComida;
+    document.getElementById("invitados").innerText = invitados;
+    document.getElementById("participantes").innerText = jugadores+soloComida+invitados;
+
+    // 🚀 Egresos: hoja aparte
+    const res2 = await fetch(API_URL, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ action:"getEgresos" })
+    });
+    const egresosData = await res2.json();
+    let egresos = 0;
+    if (egresosData.ok) {
+      egresosData.egresos.forEach(e=>{
+        egresos += Number(e.Monto)||0;
+      });
+    }
+    document.getElementById("egresos").innerText = money(egresos);
+    document.getElementById("balance").innerText = money(ingresos-egresos);
+
+  } catch(err){
+    console.error("Error cargando resumen:",err);
+    alert("No se pudo cargar el resumen");
+  }
+}
+
+cargarResumen();
+</script>
+</body>
+</html>
