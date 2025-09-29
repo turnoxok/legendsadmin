@@ -6,9 +6,7 @@
   <title>Resumen Encuentro | Legends</title>
   <meta name="description" content="Resumen financiero y de participantes - Encuentro de veteranos" />
   <link rel="icon" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
-  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
   <style>
     :root{
       --bg:#07160d;
@@ -27,38 +25,23 @@
     .logo img{width:100%; height:100%; object-fit:contain;}
     h1{font-size:1.1rem; margin:0; font-weight:800; letter-spacing:0.4px}
     p.lead{margin:0;color:var(--muted); font-size:0.9rem}
-
-    /* Cards */
     .cards{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
     .card{background:linear-gradient(180deg,rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:8px;}
     .card .small{font-size:0.8rem; color:var(--muted)}
     .card .big{font-size:1.4rem; font-weight:800; color:var(--text)}
     .card.positive{border-left:4px solid #2ecc71}
     .card.negative{border-left:4px solid #e74c3c}
-
-    /* Layout two columns */
     .mainGrid{display:grid; grid-template-columns:1fr 380px; gap:12px;}
     .panel{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 8px 30px rgba(2,6,4,0.6);}
-
-    /* Table */
-    table{width:100%; border-collapse:collapse; color:var(--text); font-size:0.9rem;}
-    th{ text-align:left; font-size:0.8rem; color:var(--muted); padding:8px 6px; }
-    td{padding:8px 6px; border-top:1px dashed rgba(255,255,255,0.04)}
     .club-row{display:flex; gap:10px; align-items:center; justify-content:space-between;}
     .smallmuted{font-size:0.85rem; color:var(--muted)}
-
-    /* Egresos list */
     .egreso-item{display:flex; justify-content:space-between; gap:12px; padding:8px; border-radius:10px; background:rgba(0,0,0,0.08); margin-bottom:8px; align-items:center}
     .egreso-item .monto{font-weight:700}
-
-    /* Form */
     .form-row{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
     input, select, button, textarea{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text); padding:10px; border-radius:10px; min-width:0;}
     input::placeholder, textarea::placeholder{color:rgba(255,255,255,0.3)}
     button.primary{background:var(--accent); border:0; color:white; padding:10px 12px; cursor:pointer; border-radius:10px}
     button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px}
-
-    /* mobile tweaks */
     @media(max-width:900px){
       .mainGrid{grid-template-columns:1fr; }
       .cards{grid-template-columns:repeat(2,1fr)}
@@ -69,8 +52,6 @@
       .cards{grid-template-columns:1fr; }
       h1{font-size:1rem}
     }
-
-    /* small animations */
     @keyframes logoPop{ from{transform:scale(.8); opacity:0} to{transform:scale(1); opacity:1} }
     .muted-pill{background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:999px; font-size:0.8rem; color:var(--muted)}
     .chart-wrap{height:220px; display:flex; align-items:center; justify-content:center}
@@ -86,7 +67,6 @@
       </div>
     </header>
 
-    <!-- top cards -->
     <div class="cards">
       <div class="card positive">
         <div class="small">Ingresos (Abonos)</div>
@@ -111,14 +91,10 @@
     </div>
 
     <div class="mainGrid">
-      <!-- left: resumen por club + tabla -->
       <section class="panel">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
           <div><strong>Detalle por Club</strong><div class="smallmuted">Abonos y conteos</div></div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <!-- Try first to load entire sheet; fallback allow club filter -->
-            <div class="muted-pill" id="loadState">Cargando...</div>
-          </div>
+          <div><div class="muted-pill" id="loadState">Cargando...</div></div>
         </div>
 
         <div style="overflow:auto; max-height:420px; padding-right:6px">
@@ -149,7 +125,6 @@
         </div>
       </section>
 
-      <!-- right: egresos -->
       <aside class="panel">
         <div style="display:flex; justify-content:space-between; align-items:center">
           <div><strong>Egresos</strong><div class="smallmuted">Registrar y ver lista</div></div>
@@ -176,10 +151,6 @@
           <button class="primary" id="btnAddEgreso">Agregar</button>
           <button class="ghost" id="btnClearEgreso">Limpiar</button>
         </div>
-
-        <div style="margin-top:12px; color:var(--muted); font-size:0.9rem">
-          Nota: los abonos (ingresos) se leen desde la hoja <code>Respuestas</code> (columna Abono). Los egresos pueden venir de la hoja <code>Egresos</code> o agregarse aquí (requiere backend compatible).
-        </div>
       </aside>
     </div>
 
@@ -190,37 +161,23 @@
   </div>
 
 <script>
-/*
-  Frontend dashboard logic.
-  - Intenta primero GET ?hoja=Respuestas y ?hoja=Egresos (si tu proxy lo acepta)
-  - Si no, usa POST { action: 'getPlayers', club } si el usuario filtra por club.
-  - Agregar egreso con POST { action: 'addEgreso', ... } (debe estar implementado en backend).
-*/
-
 const API = '/.netlify/functions/gs-proxy';
 const loadState = document.getElementById('loadState');
 const btnRefresh = document.getElementById('btnRefresh');
 
-let rawRows = [];      // filas de Respuestas (objetos)
-let egresosRows = [];  // filas de Egresos
+let rawRows = [];
+let egresosRows = [];
 
-// UTIL helpers
 function formatMoney(n){ return "$" + Number(n||0).toLocaleString('es-AR'); }
 function nowString(){ return (new Date()).toLocaleString(); }
-
 function setLoad(text){ loadState.innerText = text || 'Listo'; }
 
-// INTENTO 1: leer hoja Respuestas por GET ?hoja=Respuestas
 async function fetchSheetByGet(sheetName){
   try{
-    const url = `${API}?hoja=${encodeURIComponent(sheetName)}`;
-    const res = await fetch(url);
+    const res = await fetch(`${API}?hoja=${encodeURIComponent(sheetName)}`);
     if(!res.ok) throw new Error('respuesta no OK: '+res.status);
     const text = await res.text();
-    // algunos proxys devuelven CSV/TSV, otros JSON; intentamos JSON primero
     try { return JSON.parse(text); } catch(e){
-      // intentar parseo simple CSV -> convertir a array de objetos si viene así
-      // Si es CSV: primera línea headers
       const rows = text.trim().split(/\r?\n/).map(r=>r.split('\t'));
       if(rows.length < 2) return [];
       const headers = rows.shift().map(h => h.trim());
@@ -230,140 +187,70 @@ async function fetchSheetByGet(sheetName){
         return obj;
       });
     }
-  }catch(err){
-    console.warn('GET hoja', sheetName, 'falló:', err.message);
-    throw err;
-  }
+  }catch(err){ console.warn('GET hoja', sheetName, 'falló:', err.message); return []; }
 }
 
-// INTENTO 2: fallback por clubs usando POST {action:"getPlayers", club}
-async function fetchPlayersByClubList(clubs){
-  const all=[];
-  for(const c of clubs){
-    try{
-      const r = await fetch(API, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'getPlayers', club: c })
-      });
-      const data = await r.json();
-      if(data.ok && data.players) all.push(...data.players);
-    }catch(err){ console.warn('err club', c, err.message); }
-  }
-  return all;
-}
-
-// cargar egresos (GET primera opción)
 async function loadEgresos(){
   try{
     const rows = await fetchSheetByGet('Egresos');
-    // expectativa: array de objetos con columnas: Fecha, Descripcion, Monto, Categoria
-    if(Array.isArray(rows)) {
-      egresosRows = rows.map(r => ({
-        Fecha: r.Fecha || r.fecha || '',
-        Descripcion: r.Descripcion || r.descripcion || r.Detalle || '',
-        Monto: Number(r.Monto || r.monto || r.Money || 0) || 0,
-        Categoria: r.Categoria || r.categoria || r.Cat || 'Otros'
-      }));
-    }
-  }catch(err){
-    // no existe o proxy no permite GET -> mantén egresosRows vacío
-    console.info('No se pudo leer Egresos por GET (puede no existir):', err.message);
-    egresosRows = [];
-  }
+    egresosRows = rows.map(r => ({
+      Fecha: r.Fecha || r.fecha || '',
+      Descripcion: r.Descripcion || r.descripcion || r.Detalle || '',
+      Monto: Number(r.Monto || r.monto || r.Money || 0) || 0,
+      Categoria: r.Categoria || r.categoria || r.Cat || 'Otros'
+    }));
+  }catch(err){ egresosRows=[]; console.info('No se pudo leer Egresos GET:', err.message);}
   renderEgresos();
 }
 
-// cargar respuestas (abonos) con estrategia: GET whole sheet -> fallback pedir clubFilter
 async function loadRespuestas(options = { tryGet:true, clubFilter: '' }){
   setLoad('Cargando datos...');
   rawRows = [];
   try{
     if(options.tryGet){
-      // primero intentar GET
       const rows = await fetchSheetByGet('Respuestas');
-      if(Array.isArray(rows)) {
-        rawRows = rows;
-        setLoad('Datos cargados (GET)');
-      } else {
-        throw new Error('Formato inesperado GET Respuestas');
-      }
+      if(Array.isArray(rows)) rawRows = rows;
+      setLoad('Datos cargados');
     }
-  }catch(err){
-    // fallback: si el usuario puso clubFilter, llamar al backend post getPlayers
-    if(options.clubFilter && options.clubFilter.trim()){
-      const club = options.clubFilter.trim();
-      try{
-        const r = await fetch(API, {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ action:'getPlayers', club })
-        });
-        const data = await r.json();
-        if(data.ok) { rawRows = data.players; setLoad('Datos cargados (POST por club)'); }
-        else throw new Error(data.error || 'error backend');
-      }catch(err2){
-        console.error('Fallback POST getPlayers falló:', err2.message);
-        setLoad('No se pudo cargar (ver consola)');
-      }
-    } else {
-      // si no hay clubFilter, pedir interacción al usuario
-      setLoad('No puede leer hoja completa. Ingrese club en filtro y presione Refrescar');
-    }
-  } finally {
-    // procesar y renderizar
-    processAndRender();
-  }
+  }catch(err){ setLoad('No se pudo cargar Respuestas'); }
+  processAndRender();
 }
 
-// Procesa rawRows y actualiza UI
 function processAndRender(){
-  // columnas esperadas (según tu hoja): Fecha, Club, Nombre, Apellido, Fecha Nacimiento, Edad, CUIL/CUIT, Obra Social, Cuál Obra, Tipo Entrada, Invitados, Total, Abono, Saldo
   const rows = rawRows || [];
-  // normalize keys: usar exactamente las claves existentes; a veces vienen con espacios
-  // contamos por club:
   const byClub = {};
-  let totalAbonos = 0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
+  let totalAbonos=0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
 
   rows.forEach(r=>{
-    // leer campos posibles con varias variantes
     const club = r['Club'] || r['club'] || r['Club/Equipo'] || r['Equipo'] || r.B || '';
-    const tipo = (r['Tipo Entrada'] || r['Tipo entrada'] || r['Tipo'] || r['TipoEntrada'] || r['Tipo Entrada '] || '').toString().trim();
-    const invitados = Number(r['Invitados'] || r['invitados'] || r['Invitados '] || 0) || 0;
-    const abono = Number(r['Abono'] || r['Pago'] || r['M'] || r['Abonos'] || 0) || 0;
-    const total = Number(r['Total'] || r['Total '] || 0) || 0;
-
-    if(!byClub[club]) byClub[club] = { abono:0, jugadores:0, soloComida:0, invitados:0, count:0 };
+    const tipo = (r['Tipo Entrada'] || r['Tipo entrada'] || '').toString().trim();
+    const invitados = Number(r['Invitados']||0)||0;
+    const abono = Number(r['Abono']||0)||0;
+    if(!byClub[club]) byClub[club] = {abono:0, jugadores:0, soloComida:0, invitados:0};
     byClub[club].abono += abono;
     byClub[club].invitados += invitados;
-    byClub[club].count++;
 
-    // clasificar tipo
     const t = tipo.toLowerCase();
     if(t.includes('jugador')) { byClub[club].jugadores++; totalJugadores++; }
     else if(t.includes('comida') || t.includes('solo')) { byClub[club].soloComida++; totalSoloComida++; }
-    else { /* si no sabemos, lo dejamos en jugadores por defecto opcional */ }
-
     totalAbonos += abono;
     totalInvitados += invitados;
   });
 
-  // actualizar cards
+  const egTotal = egresosRows.reduce((s,e)=>s+(Number(e.Monto)||0),0);
   document.getElementById('ingresos').innerText = formatMoney(totalAbonos);
-  // calcular egresos total:
-  const egTotal = egresosRows.reduce((s,e)=> s + (Number(e.Monto)||0), 0);
   document.getElementById('egresosTotal').innerText = formatMoney(egTotal);
   document.getElementById('saldo').innerText = formatMoney(totalAbonos - egTotal);
 
-  // participantes totales
-  const participantesCount = totalJugadores + totalSoloComida + totalInvitados;
+  const participantesCount = totalJugadores+totalSoloComida+totalInvitados;
   document.getElementById('participantes').innerText = participantesCount;
   document.getElementById('subcounts').innerText = `Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
 
-  // llenar tabla por club
   const tbody = document.querySelector('#clubTable tbody');
-  tbody.innerHTML = '';
+  tbody.innerHTML='';
   const clubKeys = Object.keys(byClub).sort((a,b)=> byClub[b].abono - byClub[a].abono);
-  if(clubKeys.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted)">No hay datos. Intenta "Refrescar" con un club en filtro si GET no funciona.</td></tr>`;
+  if(clubKeys.length===0){
+    tbody.innerHTML=`<tr><td colspan="5" style="text-align:center; color:var(--muted)">No hay datos. Intenta "Refrescar" con un club en filtro si GET no funciona.</td></tr>`;
   } else {
     clubKeys.forEach(club=>{
       const c = byClub[club];
@@ -377,140 +264,70 @@ function processAndRender(){
     });
   }
 
-  // preparar datos para gráfica ingresos por club
-  const labels = clubKeys.map(k=> k || '--');
-  const dataVals = clubKeys.map(k => byClub[k].abono);
-  renderChart(labels, dataVals);
-
-  // updated
+  const labels = clubKeys.map(k=>k||'--');
+  const dataVals = clubKeys.map(k=>byClub[k].abono);
+  renderChart(labels,dataVals);
   document.getElementById('updatedAt').innerText = nowString();
   setLoad('');
 }
 
-// Render donut chart using Chart.js
 let chartInstance = null;
-function renderChart(labels, dataVals){
+function renderChart(labels,dataVals){
   const ctx = document.getElementById('ingresosChart').getContext('2d');
   if(chartInstance) chartInstance.destroy();
-  chartInstance = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{
-        data: dataVals,
-        backgroundColor: generatePalette(labels.length),
-        hoverOffset: 8,
-      }]
-    },
-    options: {
-      plugins: { legend: { position:'bottom', labels:{color:'#cfe9d1'} } },
-      maintainAspectRatio: false
-    }
+  chartInstance = new Chart(ctx,{
+    type:'doughnut',
+    data:{labels, datasets:[{data:dataVals, backgroundColor:generatePalette(labels.length), hoverOffset:8}]},
+    options:{plugins:{legend:{position:'bottom', labels:{color:'#cfe9d1'}}}, maintainAspectRatio:false}
   });
 }
+function generatePalette(n){ const base=['#0A702A','#2E8B57','#3CB371','#66CDAA','#8FD6B3','#BCEAD6','#C4F1D4','#E6FFF1']; const out=[]; for(let i=0;i<n;i++) out.push(base[i%base.length]); return out;}
 
-// small palette generator
-function generatePalette(n){
-  const base = ['#0A702A','#2E8B57','#3CB371','#66CDAA','#8FD6B3','#BCEAD6','#C4F1D4','#E6FFF1'];
-  const out = [];
-  for(let i=0;i<n;i++) out.push(base[i % base.length]);
-  return out;
-}
-
-// render egresos list
 function renderEgresos(){
   const list = document.getElementById('egresosList');
-  list.innerHTML = '';
-  if(!egresosRows || egresosRows.length === 0){
-    list.innerHTML = `<div style="color:var(--muted)">No hay egresos registrados.</div>`;
-    document.getElementById('egresoCount').innerText = '0 items';
+  list.innerHTML='';
+  if(!egresosRows || egresosRows.length===0){
+    list.innerHTML=`<div style="color:var(--muted)">No hay egresos registrados.</div>`;
+    document.getElementById('egresoCount').innerText='0 items';
     return;
   }
-  egresosRows.sort((a,b)=> new Date(b.Fecha) - new Date(a.Fecha));
+  egresosRows.sort((a,b)=> new Date(b.Fecha)-new Date(a.Fecha));
   egresosRows.forEach(e=>{
-    const div = document.createElement('div');
-    div.className = 'egreso-item';
-    div.innerHTML = `<div>
-                      <div style="font-weight:700">${e.Descripcion||'Sin descripción'}</div>
-                      <div class="smallmuted">${e.Categoria||'--'} • ${e.Fecha||''}</div>
-                    </div>
-                    <div class="monto">${formatMoney(e.Monto)}</div>`;
+    const div=document.createElement('div');
+    div.className='egreso-item';
+    div.innerHTML=`<div><div style="font-weight:700">${e.Descripcion||'Sin descripción'}</div><div class="smallmuted">${e.Categoria||'--'} • ${e.Fecha||''}</div></div><div class="monto">${formatMoney(e.Monto)}</div>`;
     list.appendChild(div);
   });
-  document.getElementById('egresoCount').innerText = `${egresosRows.length} items`;
-  // actualizar egresos total en header card (llamamos a processAndRender para recalcular)
+  document.getElementById('egresoCount').innerText=`${egresosRows.length} items`;
   processAndRender();
 }
 
-// Event handlers: add egreso (POST)
 document.getElementById('btnAddEgreso').addEventListener('click', async ()=>{
-  const desc = document.getElementById('e_desc').value.trim();
-  const montoStr = document.getElementById('e_monto').value.trim();
-  const fecha = document.getElementById('e_fecha').value || (new Date()).toISOString().slice(0,10);
-  const cat = document.getElementById('e_cat').value;
-
-  const monto = Number(montoStr || 0);
-  if(!desc || !monto || isNaN(monto)){
-    alert('Complete descripción y monto válido');
-    return;
-  }
-
-  // intentamos POST a backend con action addEgreso
+  const desc=document.getElementById('e_desc').value.trim();
+  const montoStr=document.getElementById('e_monto').value.trim();
+  const fecha=document.getElementById('e_fecha').value||(new Date()).toISOString().slice(0,10);
+  const cat=document.getElementById('e_cat').value;
+  const monto=Number(montoStr||0);
+  if(!desc || !monto || isNaN(monto)){ alert('Complete descripción y monto válido'); return; }
   try{
-    const res = await fetch(API, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'addEgreso', Descripcion: desc, Monto: monto, Fecha: fecha, Categoria: cat })
-    });
-    // si backend responde JSON con ok
-    const data = await res.json();
-    if(data.ok){
-      // si backend devolvió la nueva lista, la usamos; si no, hacemos refresco
-      if(data.egresos) {
-        egresosRows = data.egresos.map(e => ({ ...e, Monto: Number(e.Monto||e.monto||0) }));
-      } else {
-        // push al array local para mostrar inmediato (persistencia depende del backend)
-        egresosRows.unshift({ Descripcion: desc, Monto: monto, Fecha: fecha, Categoria: cat });
-      }
-      renderEgresos();
-      // limpiar formulario
-      document.getElementById('e_desc').value=''; document.getElementById('e_monto').value=''; document.getElementById('e_fecha').value='';
-      alert('Egreso agregado (si tu backend lo soporta se guardará en la hoja Egresos).');
-    } else {
-      alert('Backend no soporta addEgreso o devolvió error: ' + JSON.stringify(data));
-    }
-  }catch(err){
-    console.error('addEgreso err', err);
-    alert('No se pudo agregar egreso (ver consola). Si tu backend no implementa addEgreso, dímelo y lo ajustamos.');
-  }
+    const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'addEgreso', Descripcion:desc, Monto:monto, Fecha:fecha, Categoria:cat})});
+    const data=await res.json();
+    if(data.ok){ egresosRows.unshift({Descripcion:desc,Monto:monto,Fecha:fecha,Categoria:cat}); renderEgresos(); document.getElementById('e_desc').value=''; document.getElementById('e_monto').value=''; document.getElementById('e_fecha').value=''; alert('Egreso agregado.'); }
+    else alert('Error backend: '+JSON.stringify(data));
+  }catch(err){ console.error('addEgreso err',err); alert('No se pudo agregar egreso.'); }
 });
 
-// clear button
-document.getElementById('btnClearEgreso').addEventListener('click', ()=>{
-  document.getElementById('e_desc').value=''; document.getElementById('e_monto').value=''; document.getElementById('e_fecha').value='';
-});
+document.getElementById('btnClearEgreso').addEventListener('click', ()=>{document.getElementById('e_desc').value=''; document.getElementById('e_monto').value=''; document.getElementById('e_fecha').value='';});
 
-// refresh button (intenta GET, si no lee clubFilter and POST)
 btnRefresh.addEventListener('click', async ()=>{
-  const clubFilter = document.getElementById('clubFilter').value.trim();
+  const clubFilter=document.getElementById('clubFilter').value.trim();
   setLoad('Refrescando...');
   await loadEgresos();
-  await loadRespuestas({ tryGet:true, clubFilter });
+  await loadRespuestas({tryGet:true, clubFilter});
   setLoad('');
 });
 
-// inicializar: intentamos cargar todo por GET
-(async function init(){
-  setLoad('Iniciando carga...');
-  try{
-    await loadEgresos();
-    await loadRespuestas({ tryGet:true, clubFilter: '' });
-  }catch(err){
-    console.warn('init err', err);
-  } finally {
-    setLoad('');
-  }
-})();
-
+(async function init(){ setLoad('Iniciando carga...'); try{ await loadEgresos(); await loadRespuestas({tryGet:true, clubFilter:''}); }catch(err){console.warn('init err',err);} finally{ setLoad(''); }})();
 </script>
 </body>
 </html>
