@@ -1,101 +1,166 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Resumen | Legends</title>
-  <link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png">
-  <style>
-    body { font-family:"Montserrat",sans-serif; background:#F5F6F2; color:#084D1F; text-align:center; padding:20px;}
-    #loader { display:flex; justify-content:center; align-items:center; height:100vh; }
-    .stat { margin:10px 0; font-weight:bold; font-size:1.2rem; }
-    #resumen { display:none; }
-    input, button { padding:8px; margin:5px; font-size:14px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resumen | Legends</title>
+<meta name="description" content="Resumen de inscripciones y finanzas por club">
+<link rel="icon" type="image/png" href="https://i.ibb.co/nN8LPTjD/logo-verde.png" />
+<meta name="theme-color" content="#084D1F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin:0; padding:0; }
+body { font-family:"Montserrat",sans-serif; background:#F5F6F2; color:#084D1F; display:flex; flex-direction:column; align-items:center; width:100%; padding:0 5px; }
+h1,h2,h3,h4 { text-align:center; margin:5px 0; }
+
+.portada { display:flex; justify-content:center; align-items:center; width:100%; margin:0 auto; padding:10px 0; }
+.portada img { max-width:100%; height:auto; display:block; border-radius:0 0 12px 12px; }
+
+#loader { position: fixed; top:0; left:0; width:100%; height:100%; background:#084D1F; display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:9999; }
+#loader img { width:120px; height:auto; animation:pulse 1.5s infinite ease-in-out; }
+#loader p { color:#F5F6F2; margin-top:20px; font-size:1.2rem; font-weight:600; letter-spacing:1px; text-align:center; }
+@keyframes pulse { 0%{transform:scale(1);opacity:1;} 50%{transform:scale(1.15);opacity:0.8;} 100%{transform:scale(1);opacity:1;} }
+.hidden { display:none !important; }
+
+#resumen { display:none; width:100%; max-width:900px; margin:0 auto; text-align:center; }
+#totalesDinero, #jugadores, #soloComida, #invitados, #totalParticipantes { margin:5px 0; font-weight:bold; }
+#ingresos-egresos { margin-top:20px; text-align:left; }
+#ingresos-egresos h2 { margin:10px 0 5px; }
+#ingresos-egresos div { margin:2px 0; font-weight:500; }
+
+table { width:100%; border-collapse:collapse; font-size:14px; margin-top:5px; }
+th, td { border:1px solid #084D1F; padding:6px; text-align:center; word-wrap:break-word; }
+th { background:#084D1F; color:#F5F6F2; }
+tr.totalRow { font-weight:bold; background:#e0e0e0; }
+
+@media(max-width:768px){
+  table, th, td{font-size:13px; padding:5px;}
+  #resumen{padding:15px;}
+  #loader img{width:100px;}
+}
+@media(max-width:480px){
+  table, th, td{font-size:12px; padding:4px;}
+  #resumen{padding:10px;}
+  #loader img{width:80px;}
+}
+</style>
 </head>
 <body>
 
-<h1>Resumen General</h1>
-
-<div id="login">
-  <h2>Login</h2>
-  <input id="usuario" placeholder="Usuario">
-  <input id="clave" type="password" placeholder="Clave">
-  <button onclick="login()">Entrar</button>
+<div id="loader">
+  <img src="https://i.ibb.co/GfJfM48J/Tilcara-logo-con-sombra.png" alt="Escudo del Club">
+  <p>Cargando resumen...</p>
 </div>
 
-<div id="loader" style="display:none;">
-  <p>Cargando datos...</p>
+<div class="portada">
+  <img src="https://i.ibb.co/ym93ZMtF/Admin-Jugadores.png" alt="Encuentro Rugby Veteranos">
 </div>
 
 <div id="resumen">
-  <div class="stat" id="totalParticipantes"></div>
-  <div class="stat" id="jugadores"></div>
-  <div class="stat" id="soloComida"></div>
-  <div class="stat" id="invitados"></div>
-  <div class="stat" id="totalesDinero"></div>
+  <h2>Resumen de Participantes y Finanzas</h2>
+  <div id="jugadores"></div>
+  <div id="soloComida"></div>
+  <div id="invitados"></div>
+  <div id="totalParticipantes"></div>
+  <div id="totalesDinero"></div>
+
+  <div id="ingresos-egresos">
+    <h2>Ingresos por Club</h2>
+    <div id="ingresos"></div>
+
+    <h2>Egresos</h2>
+    <table id="egresosTable">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Descripción</th>
+          <th>Monto</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
 const API_URL = '/.netlify/functions/gs-proxy';
-let clubesActuales = [];
+const loader = document.getElementById("loader");
 
-function showLoader() { document.getElementById("loader").style.display="flex"; }
-function hideLoader() { document.getElementById("loader").style.display="none"; }
+function showLoader(){ loader.classList.remove("hidden"); }
+function hideLoader(){ loader.classList.add("hidden"); }
 
-async function login(){
-  const usuario = document.getElementById("usuario").value;
-  const clave = document.getElementById("clave").value;
-
+window.addEventListener("load", async ()=>{
   showLoader();
   try{
-    const res = await fetch(API_URL,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ action:"login", usuario, clave })
-    });
-    const data = await res.json();
+    const players = await fetchPlayers();
+    renderResumen(players);
+  } catch(e){ console.error(e); alert("Error al cargar datos"); }
+  finally{ setTimeout(hideLoader,1200); }
+});
 
-    if(data.ok){
-      clubesActuales = data.club.split(",").map(c=>c.trim());
-      document.getElementById("login").style.display="none";
-      loadResumen(clubesActuales);
-    } else {
-      alert("Usuario o clave incorrectos");
-      hideLoader();
-    }
-  } catch(err){
-    console.error(err);
-    alert("Error de conexión");
-    hideLoader();
-  }
-}
-
-async function loadResumen(clubes){
-  let allPlayers = [];
-  try{
-    const promises = clubes.map(club =>
-      fetch(API_URL,{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ action:"getPlayers", club })
-      }).then(r=>r.json())
-    );
-    const results = await Promise.all(promises);
-    results.forEach(data=>{ if(data.ok) allPlayers = allPlayers.concat(data.players); });
-    renderResumen(allPlayers);
-  } catch(err){
-    console.error(err);
-    alert("Error al cargar los datos");
-  }
+async function fetchPlayers(){
+  const res = await fetch(API_URL,{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:"getPlayers"})
+  });
+  const data = await res.json();
+  if(data.ok) return data.players;
+  return [];
 }
 
 function formatCurrency(num){ return "$" + Number(num).toLocaleString('es-AR'); }
 
-function renderResumen(players){
-  hideLoader();
-  document.getElementById("resumen").style.display="block";
+function renderIngresosEgresos(players){
+  // Ingresos por club
+  const ingresosPorClub = {};
+  players.forEach(p=>{
+    const club = p.Club || "Sin Club";
+    const total = Number(p.Total) || 0;
+    ingresosPorClub[club] = (ingresosPorClub[club] || 0) + total;
+  });
 
+  const ingresosDiv = document.getElementById("ingresos");
+  ingresosDiv.innerHTML = "";
+  for(let club in ingresosPorClub){
+    const div = document.createElement("div");
+    div.innerText = `${club}: ${formatCurrency(ingresosPorClub[club])}`;
+    ingresosDiv.appendChild(div);
+  }
+
+  // Egresos: ejemplo vacío, se llenará cuando agregues datos
+  const egresos = [
+    // {fecha:"2025-09-28", descripcion:"Alquiler cancha", monto:5000},
+  ];
+
+  const tbody = document.getElementById("egresosTable").querySelector("tbody");
+  tbody.innerHTML = "";
+  let totalEgresos = 0;
+  egresos.forEach(e=>{
+    totalEgresos += Number(e.monto) || 0;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${e.fecha}</td>
+      <td>${e.descripcion}</td>
+      <td>${formatCurrency(e.monto)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Total egresos
+  const trTotal = document.createElement("tr");
+  trTotal.classList.add("totalRow");
+  trTotal.innerHTML = `
+    <td colspan="2">Total Egresos</td>
+    <td>${formatCurrency(totalEgresos)}</td>
+  `;
+  tbody.appendChild(trTotal);
+}
+
+function renderResumen(players){
   let total=0, abonos=0, saldos=0;
   let jugadores=0, soloComida=0, invitados=0;
 
@@ -111,11 +176,15 @@ function renderResumen(players){
     invitados += Number(p.Invitados)||0;
   });
 
-  document.getElementById("totalParticipantes").innerText = `Total Participantes: ${jugadores + soloComida + invitados}`;
   document.getElementById("jugadores").innerText = `Jugadores: ${jugadores}`;
   document.getElementById("soloComida").innerText = `Solo Comida: ${soloComida}`;
   document.getElementById("invitados").innerText = `Invitados: ${invitados}`;
+  document.getElementById("totalParticipantes").innerText = `Total Participantes: ${jugadores + soloComida + invitados}`;
   document.getElementById("totalesDinero").innerText = `Total: ${formatCurrency(total)} | Abonos: ${formatCurrency(abonos)} | Saldo: ${formatCurrency(saldos)}`;
+
+  renderIngresosEgresos(players);
+
+  document.getElementById("resumen").style.display="block";
 }
 </script>
 
