@@ -57,245 +57,209 @@ td{padding:8px 6px; border-top:1px dashed rgba(255,255,255,0.04)}
 #login { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
 #login input { padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.05); color:var(--text); }
 #login button { padding:8px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; }
+
+/* Responsive */
+@media(max-width:900px){
+  .mainGrid{grid-template-columns:1fr;}
+  .cards{grid-template-columns:1fr;}
+}
+@media(max-width:420px){
+  h1{font-size:1rem}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="logo"><img src="https://i.ibb.co/nN8LPTjD/logo-verde.png" alt="logo"></div>
-    <div>
-      <h1>Resumen Encuentro — Tilcara Legends</h1>
-      <p class="lead">Finanzas y participantes — vista rápida</p>
-    </div>
-  </header>
-
-  <!-- login simple -->
-  <div id="login">
-    <input id="usuario" placeholder="Usuario">
-    <input id="clave" type="password" placeholder="Clave">
-    <button onclick="login()">Entrar</button>
+<header>
+  <div class="logo"><img src="https://i.ibb.co/nN8LPTjD/logo-verde.png" alt="logo"></div>
+  <div>
+    <h1>Resumen Encuentro — Tilcara Legends</h1>
+    <p class="lead">Finanzas y participantes — vista rápida</p>
   </div>
+</header>
 
-  <!-- top cards -->
-  <div class="cards">
-    <div class="card positive">
-      <div class="small">Ingresos (Abonos)</div>
-      <div id="ingresos" class="big">$0</div>
-      <div class="smallmuted">Total sumado por todos los clubes</div>
-    </div>
-    <div class="card negative">
-      <div class="small">Egresos</div>
-      <div id="egresosTotal" class="big">$0</div>
-      <div class="smallmuted">Compras / gastos registrados</div>
-    </div>
-    <div class="card">
-      <div class="small">Saldo Disponible</div>
-      <div id="saldo" class="big">$0</div>
-      <div class="smallmuted">Ingresos - Egresos</div>
-    </div>
-    <div class="card">
-      <div class="small">Participantes</div>
-      <div id="participantes" class="big">0</div>
-      <div class="smallmuted" id="subcounts">Jugadores 0 • Solo comida 0 • Invitados 0</div>
-    </div>
+<!-- login simple -->
+<div id="login">
+  <input id="usuario" placeholder="Usuario">
+  <input id="clave" type="password" placeholder="Clave">
+  <button onclick="login()">Entrar</button>
+</div>
+
+<!-- top cards -->
+<div class="cards">
+  <div class="card positive">
+    <div class="small">Ingresos (Abonos)</div>
+    <div id="ingresos" class="big">$0</div>
+    <div class="smallmuted">Total sumado por todos los clubes</div>
   </div>
-
-  <div class="mainGrid">
-    <!-- left: detalle por club -->
-    <section class="panel">
-      <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-        <div><strong>Detalle por Club</strong><div class="smallmuted">Abonos y conteos</div></div>
-        <div class="muted-pill" id="loadState">Esperando login...</div>
-      </div>
-      <div style="overflow:auto; max-height:420px; padding-right:6px">
-        <table id="clubTable" style="min-width:100%">
-          <thead>
-            <tr>
-              <th>Club</th><th style="text-align:right">Abono</th><th style="text-align:right">Jug.</th><th style="text-align:right">Comida</th><th style="text-align:right">Inv.</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- right: egresos -->
-    <aside class="panel">
-      <div style="display:flex; justify-content:space-between; align-items:center">
-        <div><strong>Egresos</strong><div class="smallmuted">Lista de gastos</div></div>
-        <div id="egresoCount" class="muted-pill">0 items</div>
-      </div>
-      <div id="egresosList" style="margin-top:12px; max-height:280px; overflow:auto; padding-right:6px"></div>
-
-      <!-- formulario egresos -->
-      <form id="egresoForm">
-        <input type="date" id="egresoFecha" required>
-        <input type="text" id="egresoDescripcion" placeholder="Descripcion" required>
-        <input type="number" id="egresoMonto" placeholder="Monto" required>
-        <input type="text" id="egresoCategoria" placeholder="Categoria">
-        <button type="submit" class="primary">Agregar Egreso</button>
-      </form>
-    </aside>
+  <div class="card negative">
+    <div class="small">Egresos</div>
+    <div id="egresosTotal" class="big">$0</div>
+    <div class="smallmuted">Compras / gastos registrados</div>
   </div>
+  <div class="card">
+    <div class="small">Saldo Disponible</div>
+    <div id="saldo" class="big">$0</div>
+    <div class="smallmuted">Ingresos - Egresos</div>
+  </div>
+  <div class="card">
+    <div class="small">Participantes</div>
+    <div id="participantes" class="big">0</div>
+    <div class="smallmuted" id="subcounts">Jugadores 0 • Solo comida 0 • Invitados 0</div>
+  </div>
+</div>
 
-  <footer style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:8px; color:var(--muted); font-size:0.9rem">
-    <div>Actualizado: <span id="updatedAt">—</span></div>
-  </footer>
+<div class="mainGrid">
+  <!-- left: detalle por club -->
+  <section class="panel">
+    <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+      <div><strong>Detalle por Club</strong><div class="smallmuted">Abonos y conteos</div></div>
+      <div class="muted-pill" id="loadState">Esperando login...</div>
+    </div>
+    <div style="overflow:auto; max-height:420px; padding-right:6px">
+      <table id="clubTable" style="min-width:100%">
+        <thead>
+          <tr>
+            <th>Club</th><th style="text-align:right">Abono</th><th style="text-align:right">Jug.</th><th style="text-align:right">Comida</th><th style="text-align:right">Inv.</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- right: egresos -->
+  <aside class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+      <div><strong>Egresos</strong><div class="smallmuted">Lista de gastos</div></div>
+      <div id="egresoCount" class="muted-pill">0 items</div>
+    </div>
+    <div id="egresosList" style="margin-top:12px; max-height:280px; overflow:auto; padding-right:6px"></div>
+
+    <!-- formulario egresos -->
+    <form id="egresoForm">
+      <input type="date" id="egresoFecha" required>
+      <input type="text" id="egresoDescripcion" placeholder="Descripcion" required>
+      <input type="number" id="egresoMonto" placeholder="Monto" required>
+      <input type="text" id="egresoCategoria" placeholder="Categoria">
+      <button type="submit" class="primary">Agregar Egreso</button>
+    </form>
+  </aside>
+</div>
+
+<footer style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:8px; color:var(--muted); font-size:0.9rem">
+  <div>Actualizado: <span id="updatedAt">—</span></div>
+</footer>
 </div>
 
 <script>
 const API = '/.netlify/functions/gs-proxy';
-let clubesActuales = [];
-let rawRows = [];
-let egresosRows = [];
-let userModo = '';
+let clubesActuales=[], rawRows=[], egresosRows=[], userModo='';
 
-const loadState = document.getElementById('loadState');
-function setLoad(msg){ loadState.innerText = msg||''; }
-function formatMoney(n){ return "$" + Number(n||0).toLocaleString('es-AR'); }
-function formatDate(d){ const dt = new Date(d); return dt.toLocaleDateString('es-AR'); }
+function setLoad(msg){ document.getElementById('loadState').innerText = msg||''; }
+function formatMoney(n){ return "$"+Number(n||0).toLocaleString('es-AR'); }
+function formatDate(d){ const dt=new Date(d); return dt.toLocaleDateString('es-AR'); }
 function nowString(){ return (new Date()).toLocaleString(); }
 
 // LOGIN
 async function login(){
-  const usuario = document.getElementById('usuario').value.trim();
-  const clave = document.getElementById('clave').value.trim();
-  if(!usuario || !clave) { alert("Ingrese usuario y clave"); return; }
+  const u=document.getElementById('usuario').value.trim();
+  const c=document.getElementById('clave').value.trim();
+  if(!u||!c){ alert("Ingrese usuario y clave"); return; }
   setLoad("Verificando...");
-
   try{
-    const res = await fetch(API,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'login', usuario, clave})
-    });
-    const data = await res.json();
+    const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'login', usuario:u, clave:c})});
+    const data=await res.json();
     if(data.ok){
-      clubesActuales = data.club.split(',').map(c=>c.trim());
-      userModo = data.modo || '';
-      setLoad("Login OK, cargando datos...");
+      clubesActuales = data.club.split(',').map(s=>s.trim());
+      userModo = data.modo||'';
       document.getElementById('login').style.display='none';
+      setLoad("Cargando datos...");
       await loadPlayersMulti(clubesActuales);
       await loadEgresos();
-
-      // mostrar formulario solo si modo es "edicion"
-      if(userModo.toLowerCase() === 'edicion'){
+      if(userModo.toLowerCase()==='edicion'){
         document.getElementById('egresoForm').style.display='flex';
         document.getElementById('egresoForm').addEventListener('submit', addEgreso);
       }
-
-    } else {
-      setLoad("Login fallido");
-      alert("Usuario o clave incorrectos");
-    }
-  } catch(err){
-    console.error(err);
-    setLoad("Error de conexión");
-    alert("Error de conexión");
-  }
+    }else{ setLoad("Login fallido"); alert("Usuario o clave incorrectos"); }
+  }catch(err){ console.error(err); setLoad("Error de conexión"); alert("Error de conexión"); }
 }
 
 // CARGAR JUGADORES
 async function loadPlayersMulti(clubes){
-  rawRows = [];
+  rawRows=[];
   setLoad("Cargando jugadores...");
   try{
-    const promises = clubes.map(c => 
-      fetch(API,{
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({action:'getPlayers', club:c})
-      }).then(r=>r.json())
-    );
+    const promises = clubes.map(c=> fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'getPlayers', club:c})}).then(r=>r.json()));
     const results = await Promise.all(promises);
-    results.forEach(data => { if(data.ok && data.players) rawRows.push(...data.players); });
+    results.forEach(d=>{ if(d.ok&&d.players) rawRows.push(...d.players); });
     setLoad("Procesando datos...");
     processAndRender();
-  } catch(err){
-    console.error(err);
-    setLoad("Error al cargar jugadores");
-  }
+  }catch(err){ console.error(err); setLoad("Error al cargar jugadores"); }
 }
 
 // CARGAR EGRESOS
 async function loadEgresos(){
   try{
-    const res = await fetch(API,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'getEgresos'})
-    });
-    const data = await res.json();
-    if(data.ok && data.egresos){
-      egresosRows = data.egresos;
-      renderEgresos();
-    }
-  }catch(err){
-    console.error("Error egresos",err);
-  }
+    const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'getEgresos'})});
+    const data=await res.json();
+    if(data.ok&&data.egresos){ egresosRows=data.egresos; renderEgresos(); }
+  }catch(err){ console.error("Error egresos",err); }
 }
 
 // RENDER EGRESOS
 function renderEgresos(){
-  const list = document.getElementById('egresosList');
-  list.innerHTML='';
-  let totalEgresos=0;
-
+  const list=document.getElementById('egresosList');
+  list.innerHTML=''; let total=0;
   egresosRows.forEach(e=>{
-    const monto = Number(e['Monto']||0);
-    totalEgresos+=monto;
-    const fecha = formatDate(e['Fecha']);
-
-    const div = document.createElement('div');
-    div.className="egreso-item";
-    div.innerHTML=`
-      <div>
-        <div><strong>${e['Descripcion']||'-'}</strong></div>
-        <div class="smallmuted">${fecha} • ${e['Categoria']||''}</div>
-      </div>
-      <div class="monto">${formatMoney(monto)}</div>
-    `;
+    const m=Number(e['Monto']||0); total+=m;
+    const fecha=formatDate(e['Fecha']);
+    const div=document.createElement('div');
+    div.className='egreso-item';
+    div.innerHTML=`<div><div><strong>${e['Descripcion']||'-'}</strong></div><div class="smallmuted">${fecha} • ${e['Categoria']||''}</div></div><div class="monto">${formatMoney(m)}</div>`;
     list.appendChild(div);
   });
-
-  document.getElementById('egresoCount').innerText = `${egresosRows.length} items`;
-  document.getElementById('egresosTotal').innerText = formatMoney(totalEgresos);
-
-  const ingresos = getIngresosTotal();
-  document.getElementById('saldo').innerText = formatMoney(ingresos - totalEgresos);
+  document.getElementById('egresoCount').innerText=`${egresosRows.length} items`;
+  document.getElementById('egresosTotal').innerText=formatMoney(total);
+  const ingresos = rawRows.reduce((acc,r)=>acc+Number(r['Abono']||0),0);
+  document.getElementById('saldo').innerText=formatMoney(ingresos-total);
 }
 
-// AGREGAR EGRESO
-function addEgreso(e){
+// AGREGAR EGRESO y guardar en hoja
+async function addEgreso(e){
   e.preventDefault();
-  const fecha = document.getElementById('egresoFecha').value;
-  const desc = document.getElementById('egresoDescripcion').value.trim();
-  const monto = Number(document.getElementById('egresoMonto').value);
-  const cat = document.getElementById('egresoCategoria').value.trim();
+  const fecha=document.getElementById('egresoFecha').value;
+  const desc=document.getElementById('egresoDescripcion').value.trim();
+  const monto=Number(document.getElementById('egresoMonto').value);
+  const cat=document.getElementById('egresoCategoria').value.trim();
+  if(!fecha||!desc||!monto){ alert("Complete todos los campos"); return; }
 
-  if(!fecha || !desc || !monto) { alert("Complete todos los campos"); return; }
+  const nuevo={Fecha:fecha, Descripcion:desc, Monto:monto, Categoria:cat};
 
-  const nuevo = {Fecha: fecha, Descripcion: desc, Monto: monto, Categoria: cat};
-  egresosRows.push(nuevo);
-  renderEgresos();
-
-  // reset form
-  document.getElementById('egresoForm').reset();
+  try{
+    const res=await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'addEgreso', egreso:nuevo})});
+    const data=await res.json();
+    if(data.ok){
+      egresosRows.push(nuevo);
+      renderEgresos();
+      document.getElementById('egresoForm').reset();
+    }else alert("Error al guardar en hoja de cálculo");
+  }catch(err){ console.error(err); alert("Error al guardar en hoja de cálculo"); }
 }
 
 // PROCESAR INGRESOS
 function processAndRender(){
-  const byClub = {};
-  let totalAbonos=0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
-
+  const byClub={}; let totalAbonos=0, totalJugadores=0, totalSoloComida=0, totalInvitados=0;
   rawRows.forEach(r=>{
-    const club = r['Club'] || r['club'] || '--';
-    const tipo = (r['Tipo Entrada']||'').toLowerCase();
-    const invitados = Number(r['Invitados']||0);
-    const abono = Number(r['Abono']||0);
-
-    if(!byClub[club]) byClub[club]={abono:0, jugadores:0, solo:0, invitados:0};
-    byClub[club].abono += abono;
-    if(tipo.includes('jugador')) byClub[club].jugadores +=1;
-    else if(tipo.includes('comida')) byClub[club].solo +=1;
-    byClub[club].invitados += invitados;
+    const club=r['Club']||r['club']||'--';
+    const tipo=(r['Tipo Entrada']||'').toLowerCase();
+    const invitados=Number(r['Invitados']||0);
+    const abono=Number(r['Abono']||0);
+    if(!byClub[club]) byClub[club]={abono:0,jugadores:0,solo:0,invitados:0};
+    byClub[club].abono+=abono;
+    if(tipo.includes('jugador')) byClub[club].jugadores++;
+    else if(tipo.includes('comida')) byClub[club].solo++;
+    byClub[club].invitados+=invitados;
 
     totalAbonos+=abono;
     if(tipo.includes('jugador')) totalJugadores++;
@@ -303,28 +267,19 @@ function processAndRender(){
     totalInvitados+=invitados;
   });
 
-  const tbody = document.querySelector('#clubTable tbody');
-  tbody.innerHTML='';
+  const tbody=document.querySelector('#clubTable tbody'); tbody.innerHTML='';
   for(const c in byClub){
-    const info = byClub[c];
-    const tr = document.createElement('tr');
-    tr.innerHTML=`<td>${c}</td><td style="text-align:right">${formatMoney(info.abono)}</td>
-      <td style="text-align:right">${info.jugadores}</td>
-      <td style="text-align:right">${info.solo}</td>
-      <td style="text-align:right">${info.invitados}</td>`;
+    const i=byClub[c];
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${c}</td><td style="text-align:right">${formatMoney(i.abono)}</td><td style="text-align:right">${i.jugadores}</td><td style="text-align:right">${i.solo}</td><td style="text-align:right">${i.invitados}</td>`;
     tbody.appendChild(tr);
   }
 
-  document.getElementById('ingresos').innerText = formatMoney(totalAbonos);
-  document.getElementById('participantes').innerText = totalJugadores+totalSoloComida+totalInvitados;
-  document.getElementById('subcounts').innerText = `Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
-  document.getElementById('updatedAt').innerText = nowString();
-
+  document.getElementById('ingresos').innerText=formatMoney(totalAbonos);
+  document.getElementById('participantes').innerText=totalJugadores+totalSoloComida+totalInvitados;
+  document.getElementById('subcounts').innerText=`Jugadores ${totalJugadores} • Solo comida ${totalSoloComida} • Invitados ${totalInvitados}`;
+  document.getElementById('updatedAt').innerText=nowString();
   if(egresosRows.length>0) renderEgresos();
-}
-
-function getIngresosTotal(){
-  return rawRows.reduce((acc,r)=>acc+Number(r['Abono']||0),0);
 }
 </script>
 </body>
