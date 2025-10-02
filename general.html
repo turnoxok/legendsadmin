@@ -217,6 +217,7 @@
       let all = [];
       try {
         const promises = clubes.map(club =>
+          console.log("Club consultado:", club);  // 👈 agregado
           fetch(API_URL,{
             method: "POST",
             headers: {'Content-Type':'application/json'},
