@@ -216,14 +216,15 @@
       showLoader();
       let all = [];
       try {
-        const promises = clubes.map(club =>
-         console.log("Club consultado:", club); 
-          fetch(API_URL,{
-            method: "POST",
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({action:"getPlayers", club})
-          }).then(r => r.json())
-        );
+        const promises = clubes.map(club => {
+  console.log("Club consultado:", club);   // debug
+  return fetch(API_URL,{
+    method: "POST",
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({action:"getPlayers", club})
+  }).then(r => r.json());
+});
+
         const results = await Promise.all(promises);
         results.forEach(data => {
           if(data.ok) all = all.concat(data.players);
